@@ -362,6 +362,30 @@ function fmtTime(t){ if(!t) return ''; const [h,m]=t.split(':'); const hh=parseI
 function esc(s){ return (s===undefined||s===null) ? '' : String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function initials(name){ return (name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._h); toast._h=setTimeout(()=>t.classList.remove('show'),2400); }
+function askConfirm(message){
+  // Replaces native window.confirm(), which is unreliable (often silently
+  // does nothing) inside mobile browsers and especially inside APK-wrapped
+  // web apps. Returns a Promise<boolean> resolved by the user's tap.
+  return new Promise((resolve)=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.style.zIndex = '300';
+    overlay.innerHTML = `<div class="modal" style="max-width:340px;">
+      <div class="modal-body" style="padding-top:20px;">
+        <p style="font-size:14px;line-height:1.5;margin:0 0 16px;">${esc(message)}</p>
+        <div class="btn-row" style="justify-content:flex-end;">
+          <button class="btn secondary" id="askConfirmNo">Cancel</button>
+          <button class="btn danger" id="askConfirmYes">Yes, continue</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const cleanup = (result)=>{ overlay.remove(); resolve(result); };
+    overlay.querySelector('#askConfirmNo').onclick = ()=>cleanup(false);
+    overlay.querySelector('#askConfirmYes').onclick = ()=>cleanup(true);
+    overlay.onclick = (e)=>{ if(e.target===overlay) cleanup(false); };
+  });
+}
 function waLink(phone, text){
   let p = (phone||'').replace(/\D/g,'');
   if(p.length===10) p = '91'+p;
@@ -600,7 +624,7 @@ function openApptStatusPrompt(appt){
   });
   overlay.querySelector('#openPtBtn').onclick = ()=>{ overlay.remove(); openPatientFromAppointment(appt.patientId); };
   overlay.querySelector('#delApptBtn').onclick = async ()=>{
-    if(!confirm('Delete this appointment?')) return;
+    if(!(await askConfirm('Delete this appointment?'))) return;
     DB.appointments.splice(idx,1); await saveAppointments(); overlay.remove(); render();
   };
 }
@@ -789,7 +813,7 @@ function renderPtOverview(body, p){
   body.querySelector('#printBtn').onclick = ()=>printCaseSheet(p);
   body.querySelector('#waBtn').onclick = ()=>shareWhatsAppSummary(p);
   body.querySelector('#delPtBtn').onclick = async ()=>{
-    if(!confirm(`Delete ${p.name} and all their records? This cannot be undone.`)) return;
+    if(!(await askConfirm(`Delete ${p.name} and all their records? This cannot be undone.`))) return;
     DB.patients = DB.patients.filter(x=>x.id!==p.id);
     DB.ops = DB.ops.filter(o=>o.patientId!==p.id);
     DB.visitLogs = DB.visitLogs.filter(v=>v.patientId!==p.id);
@@ -1033,7 +1057,7 @@ function renderOpEditor(area, p, op){
         </div>
       </div>`).join('') : `<div class="empty-state"><div class="em-icon">🩺</div>No visits logged in this case yet.</div>`;
     el.querySelectorAll('[data-delv]').forEach(b=>{ b.onclick=async()=>{
-      if(!confirm('Delete this visit entry? Its linked appointment (if any) will be removed too.'))return;
+      if(!(await askConfirm('Delete this visit entry? Its linked appointment (if any) will be removed too.')))return;
       const v = DB.visitLogs.find(x=>x.id===b.dataset.delv);
       DB.visitLogs = DB.visitLogs.filter(v=>v.id!==b.dataset.delv);
       const jobs = [saveVisitLogs()];
@@ -1231,7 +1255,7 @@ function renderPtAppointments(body, p){
     sel.onchange = async ()=>{ const a=DB.appointments.find(x=>x.id===sel.dataset.status); a.status=sel.value; await saveAppointments(); toast('Status updated'); };
   });
   listEl.querySelectorAll('[data-delappt]').forEach(b=>{
-    b.onclick = async ()=>{ if(!confirm('Delete this appointment?'))return; DB.appointments=DB.appointments.filter(a=>a.id!==b.dataset.delappt); await saveAppointments(); renderPatientModal(); };
+    b.onclick = async ()=>{ if(!(await askConfirm('Delete this appointment?')))return; DB.appointments=DB.appointments.filter(a=>a.id!==b.dataset.delappt); await saveAppointments(); renderPatientModal(); };
   });
   body.querySelector('#addApptBtn').onclick = ()=>{
     document.getElementById('apptForm').innerHTML = `
@@ -1291,7 +1315,7 @@ function renderPtImages(body, p){
       return `<div class="img-cat-title">${c.l} (${items.length})</div><div class="img-grid">${items.map(im=>`<div class="img-thumb" data-view="${im.id}"><img data-src="${im.id}" alt="${c.l}"><button class="del" data-del="${im.id}">✕</button></div>`).join('')}</div>`;
     }).join('') || `<div class="empty-state"><div class="em-icon">🩻</div>No images uploaded yet.</div>`;
     secEl.querySelectorAll('img[data-src]').forEach(async (imgEl)=>{ const rec = await sGet('image:'+imgEl.dataset.src); if(rec && rec.dataUrl) imgEl.src = rec.dataUrl; });
-    secEl.querySelectorAll('[data-del]').forEach(b=>{ b.onclick=async(e)=>{ e.stopPropagation(); if(!confirm('Delete this image?'))return; DB.imagesMeta=DB.imagesMeta.filter(im=>im.id!==b.dataset.del); await saveImagesMeta(); await sDel('image:'+b.dataset.del); draw(); }; });
+    secEl.querySelectorAll('[data-del]').forEach(b=>{ b.onclick=async(e)=>{ e.stopPropagation(); if(!(await askConfirm('Delete this image?')))return; DB.imagesMeta=DB.imagesMeta.filter(im=>im.id!==b.dataset.del); await saveImagesMeta(); await sDel('image:'+b.dataset.del); draw(); }; });
     secEl.querySelectorAll('.img-thumb').forEach(el=>{ el.onclick = async ()=>{ const rec=await sGet('image:'+el.dataset.view); if(rec&&rec.dataUrl){ const w=window.open(''); if(w) w.document.write(`<img src="${rec.dataUrl}" style="max-width:100%;">`); } }; });
   }
   draw();
@@ -1510,10 +1534,21 @@ function renderDoctors(body){
         <div style="flex:1;">
           <input type="text" data-dname="${d.id}" value="${esc(d.name)}" style="font-weight:600;margin-bottom:6px;">
           <textarea data-dbio="${d.id}" placeholder="Short description / specialization" style="min-height:40px;">${esc(d.bio||'')}</textarea>
-          <div class="btn-row" style="margin-top:6px;"><label class="btn secondary small" style="cursor:pointer;">Upload photo<input type="file" accept="image/*" data-dphotoinput="${d.id}" style="display:none;"></label><button class="btn small" data-dsave="${d.id}">Save</button></div>
+          <div class="btn-row" style="margin-top:6px;"><label class="btn secondary small" style="cursor:pointer;">Upload photo<input type="file" accept="image/*" data-dphotoinput="${d.id}" style="display:none;"></label><button class="btn small" data-dsave="${d.id}">Save</button><button class="btn danger small" data-dremove="${d.id}" style="margin-left:auto;">Remove</button></div>
         </div>
       </div>`).join('');
     DB.dentists.forEach(d=>{ if(d.photoId) loadDocPhotoInto(el.querySelector(`#dphoto-${d.id}`), d.photoId); });
+    el.querySelectorAll('[data-dremove]').forEach(b=>{
+      b.onclick = async ()=>{
+        const d = DB.dentists.find(x=>x.id===b.dataset.dremove);
+        if(!d) return;
+        if(!(await askConfirm(`Remove ${d.name} from the doctors list? This won't delete their past records, just removes them from the picker.`))) return;
+        DB.dentists = DB.dentists.filter(x=>x.id!==d.id);
+        await saveDentists();
+        toast('Doctor removed');
+        draw();
+      };
+    });
     el.querySelectorAll('[data-dphotoinput]').forEach(inp=>{
       inp.onchange = async (e)=>{
         const file = e.target.files[0]; if(!file) return;
