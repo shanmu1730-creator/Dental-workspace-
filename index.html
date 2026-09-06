@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Dental Workspace</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1F4B41">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  :root{
+    --ink:#16302B; --ink-soft:#3E5951; --muted:#6B7A75;
+    --bg:#F5F3ED; --paper:#FFFFFF; --line:#E1DED2;
+    --teal:#2F6F62; --teal-dark:#1F4B41; --teal-tint:#E7EFEA;
+    --gold:#B8863B; --gold-tint:#F6EEDD;
+    --coral:#C24A3D; --coral-tint:#FBEAE7;
+    --blue:#3C6E93; --blue-tint:#E7EFF4;
+    --purple:#6A4EA8; --purple-tint:#EAE3F7;
+    --radius:10px;
+    --shadow: 0 1px 2px rgba(22,48,43,0.06), 0 4px 16px rgba(22,48,43,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; min-height:100vh;}
+  .mono{font-family:'DM Mono', ui-monospace, monospace;}
+  .disp{font-family:'Fraunces', serif;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+  a{color:inherit;}
+
+  #app{min-height:100vh;display:flex;flex-direction:column;}
+  .topbar{background:var(--teal-dark);color:#F3F6F4;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:40;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(155deg,#3D8C7A,#1F4B41);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:#fff;flex-shrink:0;}
+  .brand-name{font-family:'Fraunces',serif;font-weight:600;font-size:18px;letter-spacing:0.2px;line-height:1.15;}
+  .brand-sub{font-size:11px;color:#9FC0B5;letter-spacing:0.4px;text-transform:uppercase;margin-top:-1px;}
+  .topbar-right{display:flex;align-items:center;gap:8px;}
+  .icon-btn{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .dentist-pill{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:999px;padding:6px 12px 6px 6px;display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;}
+  .dentist-pill .avatar{width:22px;height:22px;border-radius:50%;background:var(--gold);color:#3A2A0F;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;}
+  .dentist-pill .avatar img{width:100%;height:100%;object-fit:cover;}
+  nav.tabs{display:flex;gap:2px;background:var(--paper);padding:6px;margin:14px 18px 0;border-radius:999px;border:1px solid var(--line);width:fit-content;box-shadow:var(--shadow);overflow-x:auto;max-width:calc(100% - 36px);}
+  nav.tabs button{border:none;background:transparent;padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--muted);transition:all .15s ease;white-space:nowrap;}
+  nav.tabs button.active{background:var(--teal);color:#fff;}
+  nav.tabs button:hover:not(.active){color:var(--ink);}
+
+  main{flex:1;padding:18px;max-width:1080px;width:100%;margin:0 auto;}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .section-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin:22px 0 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .section-title:first-child{margin-top:0;}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:600;}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:8px;border:1px solid transparent;font-size:13.5px;font-weight:600;background:var(--teal);color:#fff;transition:filter .15s ease;}
+  .btn:hover{filter:brightness(1.08);}
+  .btn.secondary{background:var(--paper);border-color:var(--line);color:var(--ink);}
+  .btn.ghost{background:transparent;color:var(--teal);border-color:transparent;padding:9px 10px;}
+  .btn.danger{background:var(--coral-tint);color:var(--coral);}
+  .btn.gold{background:var(--gold);color:#3A2A0F;}
+  .btn.purple{background:var(--purple);color:#fff;}
+  .btn.small{padding:6px 11px;font-size:12.5px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  input[type=text],input[type=number],input[type=tel],input[type=date],input[type=time],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff;color:var(--ink);}
+  textarea{resize:vertical;min-height:56px;}
+  label{font-size:12px;font-weight:600;color:var(--ink-soft);display:block;margin:0 0 5px;}
+  .field{margin-bottom:12px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;}
+  @media(max-width:640px){.grid2,.grid3,.grid4{grid-template-columns:1fr 1fr;}}
+
+  .search-bar{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 14px;box-shadow:var(--shadow);}
+  .search-bar input{border:none;padding:0;font-size:14px;}
+  .search-bar input:focus{outline:none;}
+
+  .plist{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .prow{display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);cursor:pointer;transition:border-color .15s;}
+  .prow:hover{border-color:var(--teal);}
+  .prow .initial{width:38px;height:38px;border-radius:50%;background:var(--teal-tint);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+  .prow .pname{font-weight:600;font-size:14.5px;}
+  .prow .pmeta{font-size:12px;color:var(--muted);margin-top:2px;}
+  .prow .parrow{margin-left:auto;color:var(--muted);}
+  .prow .check{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;}
+  .prow .check.done{background:var(--teal);border-color:var(--teal);}
+
+  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.2px;text-transform:uppercase;}
+  .chip.scheduled{background:var(--blue-tint);color:var(--blue);}
+  .chip.waiting{background:var(--gold-tint);color:var(--gold);}
+  .chip.inchair{background:var(--purple-tint);color:var(--purple);}
+  .chip.completed{background:var(--teal-tint);color:var(--teal-dark);}
+  .chip.cancelled{background:var(--coral-tint);color:var(--coral);}
+  .chip.noshow{background:#EFE9E3;color:#8A7A6B;}
+  .tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:11.5px;font-weight:600;background:var(--bg);border:1px solid var(--line);color:var(--ink-soft);}
+  .tag.on{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+  .flow-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;}
+  @media(max-width:760px){.flow-cols{grid-template-columns:1fr 1fr;}}
+  .flow-col{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:10px;min-height:90px;}
+  .flow-col h4{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);display:flex;justify-content:space-between;}
+  .flow-card{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:12.5px;cursor:pointer;}
+  .flow-card .t{font-weight:700;font-size:11px;color:var(--muted);}
+  .flow-card .n{font-weight:600;}
+  .flow-empty{font-size:12px;color:var(--muted);padding:8px 2px;}
+
+  .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  @media(max-width:640px){.stats-row{grid-template-columns:1fr;}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;}
+  .stat .v{font-family:'Fraunces',serif;font-size:26px;font-weight:600;}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .overlay{position:fixed;inset:0;background:rgba(22,48,43,0.45);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto;}
+  .modal{background:var(--bg);border-radius:14px;max-width:760px;width:100%;margin-top:10px;box-shadow:0 10px 40px rgba(0,0,0,0.25);overflow:hidden;margin-bottom:20px;}
+  .modal-head{background:var(--paper);padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:2;}
+  .modal-body{padding:16px 20px 24px;}
+  .modal-close{background:none;border:none;font-size:20px;color:var(--muted);padding:4px;}
+
+  .patient-tabs{display:flex;gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px;width:fit-content;overflow-x:auto;max-width:100%;}
+  .patient-tabs button{border:none;background:none;padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;}
+  .patient-tabs button.active{background:var(--teal);color:#fff;}
+
+  .visit-card,.appt-card,.op-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+  .visit-card .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;}
+  .dept-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--teal);background:var(--teal-tint);padding:2px 8px;border-radius:6px;}
+  .visit-card .amt{font-family:'DM Mono',monospace;font-weight:600;color:var(--gold);}
+  .visit-card .lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:8px;}
+  .visit-card p{margin:3px 0 0;font-size:13.5px;line-height:1.5;}
+
+  .op-card{cursor:pointer;transition:border-color .15s;}
+  .op-card:hover{border-color:var(--teal);}
+  .op-card.active{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-tint);}
+  .op-card .opstatus{float:right;}
+
+  .img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:8px;}
+  .img-thumb{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1;background:#eee;cursor:pointer;}
+  .img-thumb img{width:100%;height:100%;object-fit:cover;}
+  .img-thumb .del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.55);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;}
+  .img-cat-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--ink-soft);margin:16px 0 4px;}
+
+  .empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+  .empty-state .em-icon{font-size:32px;margin-bottom:8px;}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;box-shadow:var(--shadow);z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;}
+  .loading-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 1s infinite ease-in-out;}
+  @keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+  .setup-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .setup-card{max-width:420px;width:100%;background:#fff;border-radius:16px;padding:32px 28px;box-shadow:var(--shadow);border:1px solid var(--line);}
+  .setup-card .brand-mark{margin:0 auto 14px;width:48px;height:48px;font-size:20px;}
+  .setup-card h1{font-family:'Fraunces',serif;font-size:22px;text-align:center;margin:0 0 4px;}
+  .setup-card p.sub{text-align:center;color:var(--muted);font-size:13.5px;margin:0 0 22px;}
+  .dentist-choice{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;}
+  .dentist-choice:hover{border-color:var(--teal);background:var(--teal-tint);}
+
+  /* pill selector groups (chief complaint builder etc) */
+  .pill-group{display:flex;flex-wrap:wrap;gap:7px;}
+  .pill-opt{padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .pill-opt.sel{background:var(--teal);color:#fff;border-color:var(--teal);}
+  .pill-opt.small{padding:5px 10px;font-size:11.5px;}
+
+  .finding-row{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;}
+  .finding-row .ft{font-weight:700;color:var(--teal-dark);}
+  .finding-row .tn{font-family:'DM Mono',monospace;background:var(--teal-tint);padding:1px 7px;border-radius:5px;font-size:12px;}
+  .finding-row .rm{margin-left:auto;background:none;border:none;color:var(--coral);font-size:14px;}
+
+  .suggest-box{background:var(--gold-tint);border:1px dashed var(--gold);border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:8px;}
+  .suggest-box .sline{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 0;}
+  .suggest-box button{background:var(--gold);color:#3A2A0F;border:none;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;}
+
+  .med-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center;}
+  @media(max-width:640px){.med-row{grid-template-columns:1fr 1fr;}}
+  .med-row input{padding:7px 9px;font-size:12.5px;}
+
+  .instr-box{background:var(--blue-tint);border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5;white-space:pre-wrap;margin-top:6px;}
+
+  .manage-tabs{display:flex;gap:4px;overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:16px;width:fit-content;max-width:100%;}
+  .manage-tabs button{border:none;background:none;padding:8px 14px;border-radius:999px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;}
+  .manage-tabs button.active{background:var(--teal);color:#fff;}
+  .mat-row{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+  .mat-row.expired{border-color:var(--coral);background:var(--coral-tint);}
+  .mat-row.expiring{border-color:var(--gold);background:var(--gold-tint);}
+  .theme-swatch{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);cursor:pointer;flex-shrink:0;}
+  .theme-swatch.sel{border-color:var(--ink);box-shadow:0 0 0 2px #fff, 0 0 0 4px var(--ink);}
+
+  .doc-card{display:flex;gap:12px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:10px;align-items:flex-start;}
+  .doc-card .dphoto{width:56px;height:56px;border-radius:50%;background:var(--teal-tint);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-weight:700;overflow:hidden;flex-shrink:0;}
+  .doc-card .dphoto img{width:100%;height:100%;object-fit:cover;}
+
+  .corner-mark{position:fixed;bottom:3px;right:7px;font-size:8.5px;color:var(--muted);opacity:0.4;z-index:5;pointer-events:none;letter-spacing:.3px;}
+  @media print{
+    body *{visibility:hidden;}
+    .topbar, nav.tabs{display:none !important;}
+    #print-area, #print-area *{visibility:visible;}
+    #print-area{position:absolute;left:0;top:0;width:100%;padding:20px;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+<div id="print-area"></div>
+<div class="corner-mark">1730</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ SUPABASE CONFIG ============ */
+/* Paste your own project's values here — Supabase dashboard → Settings → API.
+   The anon key is meant to be public (Row Level Security protects the data),
+   same as it is in DentCase. */
+const SUPABASE_URL = 'https://riwwabswkwhutytrpmmu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpd3dhYnN3a3dodXR5dHJwbW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2ODY2MjAsImV4cCI6MjEwNDI2MjYyMH0.qCUSlTa0aSCn3BjNputkHcTnF7oDKDptac6CtB7F1l8';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============ STORAGE HELPERS ============ */
+/* Same key/value shape as the Claude artifact version — one row per key in
+   a "kv_store" table — but now backed by Supabase/Postgres instead of
+   Claude's window.storage, so it works once hosted on GitHub Pages. */
+async function sGet(key){
+  try{
+    const { data, error } = await supabase.from('kv_store').select('value').eq('key', key).maybeSingle();
+    if(error){ console.error('storage get failed', key, error); return null; }
+    return data ? data.value : null;
+  }catch(e){ console.error('storage get failed', key, e); return null; }
+}
+async function sSet(key, val){
+  try{
+    const { error } = await supabase.from('kv_store').upsert({ key, value: val, updated_at: new Date().toISOString() });
+    if(error){ console.error('storage set failed', key, error); return false; }
+    return true;
+  }catch(e){ console.error('storage set failed', key, e); return false; }
+}
+async function sDel(key){
+  try{ await supabase.from('kv_store').delete().eq('key', key); }catch(e){}
+}
+
+/* ============ STATE ============ */
+const DB = { dentists:[], patients:[], ops:[], visitLogs:[], appointments:[], imagesMeta:[], medTemplates:[], materials:[], clinicInfo:{name:'', phone:'', address:''} };
+let me = localStorage.getItem('dw1708_me') || null;
+let view = 'dashboard'; // dashboard | patients | book | manage
+let openPatientId = null;
+let patientTab = 'overview';
+let activeOpId = null;
+let searchQ = '';
+let loaded = false;
+let manageTab = 'earnings';
+
+const THEMES = {
+  clinic:  {'--teal':'#2F6F62','--teal-dark':'#1F4B41','--teal-tint':'#E7EFEA','--gold':'#B8863B','--gold-tint':'#F6EEDD','--bg':'#F5F3ED'},
+  ocean:   {'--teal':'#2A6F8E','--teal-dark':'#173E52','--teal-tint':'#E5EFF4','--gold':'#C97A3D','--gold-tint':'#F7EBDD','--bg':'#F3F5F6'},
+  rose:    {'--teal':'#9C4A5C','--teal-dark':'#5C2530','--teal-tint':'#F5E7EA','--gold':'#B8863B','--gold-tint':'#F6EEDD','--bg':'#F6F0F0'},
+  slate:   {'--teal':'#4A5568','--teal-dark':'#2B3340','--teal-tint':'#E9EBEE','--gold':'#8A6D3B','--gold-tint':'#EFE7D6','--bg':'#F2F2F0'},
+  forest:  {'--teal':'#3F7D42','--teal-dark':'#234A26','--teal-tint':'#E7F0E7','--gold':'#B8863B','--gold-tint':'#F6EEDD','--bg':'#F3F5EE'},
+};
+function applyTheme(){
+  const t = localStorage.getItem('dw1708_theme') || 'clinic';
+  const vars = THEMES[t] || THEMES.clinic;
+  Object.entries(vars).forEach(([k,v])=>document.documentElement.style.setProperty(k,v));
+}
+
+const DEPTS = ['General','Orthodontics','Periodontics','Endodontics','Oral Surgery','Prosthodontics','Pedodontics'];
+const STATUSES = [
+  {k:'scheduled', l:'Scheduled', cls:'scheduled'},
+  {k:'waiting', l:'Waiting', cls:'waiting'},
+  {k:'inchair', l:'In Chair', cls:'inchair'},
+  {k:'completed', l:'Completed', cls:'completed'},
+  {k:'cancelled', l:'Cancelled', cls:'cancelled'},
+  {k:'noshow', l:'No Show', cls:'noshow'},
+];
+const IMG_CATS = [
+  {k:'radiograph', l:'Radiograph'},
+  {k:'intraoral', l:'Intraoral'},
+  {k:'ortho_pre', l:'Ortho — Pre-op'},
+  {k:'ortho_post', l:'Ortho — Post-op'},
+  {k:'other', l:'Other'},
+];
+const CC_SYMPTOMS = ['Pain','Swelling','Cleaning / Scaling','Fix broken tooth','Sensitivity','Bleeding gums','Bad breath','Mobility of tooth','Ill-fitting denture','Follow-up visit','Cosmetic concern'];
+const CC_REGIONS = ['Upper left back tooth region','Upper right back tooth region','Lower left back tooth region','Lower right back tooth region','Upper front tooth region','Lower front tooth region','Generalized / whole mouth'];
+const DURATION_UNITS = ['days','weeks','months','years'];
+const MED_HISTORY_ITEMS = [
+  {k:'diabetes', l:'Diabetes'},
+  {k:'hypertension', l:'Hypertension'},
+  {k:'cardiac', l:'Cardiac condition'},
+  {k:'asthma', l:'Asthma'},
+  {k:'thyroid', l:'Thyroid disorder'},
+  {k:'bleeding', l:'Bleeding disorder'},
+  {k:'allergy', l:'Drug allergy'},
+  {k:'pregnant', l:'Pregnant / lactating'},
+];
+const FINDING_TYPES = [
+  {k:'caries', l:'Caries', diag:t=>`Dental caries irt ${t}`},
+  {k:'rootstump', l:'Root Stump', diag:t=>`Root stump irt ${t}`},
+  {k:'missing', l:'Missing Tooth', diag:t=>`Missing ${t}`},
+  {k:'impacted', l:'Impacted', diag:t=>`Impacted tooth irt ${t}`},
+  {k:'fractured', l:'Fractured Tooth/Restoration', diag:t=>`Fractured tooth/restoration irt ${t}`},
+  {k:'attrition', l:'Attrition / Wear Facet', diag:t=>`Attrition irt ${t}`},
+  {k:'mobility', l:'Mobility', diag:t=>`Periodontitis with mobility irt ${t}`},
+  {k:'pocket', l:'Periodontal Pocket', diag:t=>`Chronic periodontitis irt ${t}`},
+  {k:'crown', l:'Crown Placed', diag:t=>`Existing crown irt ${t}`},
+  {k:'bridge', l:'Bridge Present', diag:t=>`Existing bridge irt ${t}`},
+  {k:'implant', l:'Implant Present', diag:t=>`Existing implant irt ${t}`},
+  {k:'rctdone', l:'RCT Already Done', diag:t=>`Previously root canal treated irt ${t}`},
+  {k:'discolor', l:'Discoloration', diag:t=>`Discoloration irt ${t}`},
+  {k:'malaligned', l:'Malaligned / Rotated', diag:t=>`Malaligned/rotated irt ${t}`},
+  {k:'calculus', l:'Calculus / Stains', diag:t=>`Generalized calculus and stains`},
+  {k:'recession', l:'Gingival Recession', diag:t=>`Gingival recession irt ${t}`},
+  {k:'abscess', l:'Abscess / Sinus Tract', diag:t=>`Periapical abscess irt ${t}`},
+  {k:'diastema', l:'Diastema', diag:t=>`Diastema irt ${t}`},
+  {k:'retaineddeciduous', l:'Retained Deciduous', diag:t=>`Retained deciduous tooth irt ${t}`},
+  {k:'sensitivity', l:'Sensitivity', diag:t=>`Dentinal hypersensitivity irt ${t}`},
+];
+function diagToTreatment(diagText, tooth){
+  const d = diagText.toLowerCase();
+  if(d.includes('caries')) return `Restoration (GIC/Composite) irt ${tooth}`;
+  if(d.includes('root stump')) return `Extraction irt ${tooth}`;
+  if(d.includes('missing')) return `Prosthetic replacement (RPD/FPD/Implant) irt ${tooth}`;
+  if(d.includes('impacted')) return `Surgical removal irt ${tooth}`;
+  if(d.includes('fractured')) return `Crown / restoration irt ${tooth}`;
+  if(d.includes('periodontitis') || d.includes('pocket') || d.includes('mobility')) return `Scaling & root planing; splinting if indicated irt ${tooth}`;
+  if(d.includes('abscess')) return `RCT / extraction irt ${tooth}`;
+  if(d.includes('hypersensitivity')) return `Desensitizing agent application irt ${tooth}`;
+  if(d.includes('diastema')) return `Composite build-up / orthodontic correction irt ${tooth}`;
+  if(d.includes('discoloration')) return `Bleaching / veneer irt ${tooth}`;
+  if(d.includes('calculus')) return `Scaling and polishing`;
+  if(d.includes('malaligned')) return `Orthodontic correction irt ${tooth}`;
+  if(d.includes('retained deciduous')) return `Extraction of retained deciduous irt ${tooth}`;
+  return `Treatment planning irt ${tooth}`;
+}
+const CROWN_MATERIALS = ['Metal (Stainless Steel/CoCr)','PFM (Porcelain Fused to Metal)','Zirconia','All Ceramic (Emax)','Full Metal (Gold/Alloy)'];
+
+const INSTRUCTIONS = {
+  extraction: { label:'Post-Extraction Instructions',
+    en:"Bite firmly on the gauze pad for 30-45 minutes. Do not rinse, spit, or drink through a straw for 24 hours. Avoid hot food, smoking and alcohol for 24 hours. Take a soft, cool diet today. From tomorrow, rinse gently with warm salt water after meals. Mild swelling and discomfort is normal for 2-3 days — take medicines as prescribed. If bleeding, pain or swelling increases, please contact the clinic.",
+    ta:"பஞ்சு துணியை 30-45 நிமிடங்கள் கடித்துக்கொள்ளவும். 24 மணி நேரம் வாய் கொப்பளிக்கவோ, துப்பவோ, ஸ்ட்ரா மூலம் குடிக்கவோ வேண்டாம். 24 மணி நேரம் புகைபிடித்தல், மது அருந்துதல், சூடான உணவு தவிர்க்கவும். இன்று குளிர்ந்த, மென்மையான உணவு மட்டும் எடுக்கவும். நாளையிலிருந்து உணவுக்குப் பிறகு வெதுவெதுப்பான உப்பு நீரில் மெதுவாக வாய் கொப்பளிக்கவும். 2-3 நாட்கள் வீக்கம், வலி இருக்கலாம் — மருந்துகளை பரிந்துரைத்தபடி எடுத்துக்கொள்ளவும். ரத்தப்போக்கு/வீக்கம் அதிகரித்தால் உடனே கிளினிக்கை தொடர்பு கொள்ளவும்." },
+  scaling: { label:'Post-Scaling / Oral Hygiene Instructions',
+    en:"Mild gum sensitivity and slight bleeding while brushing is normal for 1-2 days. Brush gently twice daily with a soft brush. Rinse with warm salt water 2-3 times a day for a week. Avoid very hot, cold or spicy food for a day. Continue flossing gently. Visit the clinic every 6 months for a check-up and cleaning.",
+    ta:"1-2 நாட்கள் பல் துலக்கும்போது இரத்தநாற்றம் மற்றும் ஈறுகளில் லேசான உணர்ச்சி இருக்கலாம் — இது இயல்பானது. மென்மையான தூரிகையால் தினமும் இரு முறை மெதுவாக துலக்கவும். வாரம் முழுவதும் நாளொன்றுக்கு 2-3 முறை வெதுவெதுப்பான உப்பு நீரில் வாய் கொப்பளிக்கவும். ஒரு நாளைக்கு அதிக சூடு, குளிர், காரமான உணவைத் தவிர்க்கவும். ஃப்ளாஸ் செய்வதைத் தொடரவும். ஒவ்வொரு 6 மாதத்திற்கும் பரிசோதனைக்கு வரவும்." },
+  crown: { label:'Crown / Bridge Delivery Instructions',
+    en:"Avoid eating or drinking for 1 hour after cementation to let it set fully. For the first day, prefer soft food and avoid chewing hard or sticky items on the new crown. Mild cold sensitivity for a few days is normal. Brush and floss normally, being gentle near the gum line. If your bite feels high or the crown feels loose, contact the clinic for an adjustment.",
+    ta:"கிரவுன் பொருத்தப்பட்ட பிறகு 1 மணி நேரம் எதுவும் சாப்பிடவோ, குடிக்கவோ வேண்டாம். முதல் நாள் மென்மையான உணவு எடுத்து, கடினமான/ஒட்டும் உணவுகளை கிரவுனில் மென்று சாப்பிடுவதைத் தவிர்க்கவும். சில நாட்கள் லேசான குளிர் உணர்ச்சி இயல்பானது. வழக்கம் போல் பல் துலக்கவும், ஈறுகளுக்கு அருகில் மென்மையாக செய்யவும். கடிப்பு சரியில்லை என்றோ கிரவுன் தளர்ச்சியாக இருந்தாலோ கிளினிக்கை தொடர்பு கொள்ளவும்." },
+  rct: { label:'Post Root Canal Treatment (RCT) Instructions',
+    en:"Avoid chewing on the treated tooth until the final restoration/crown is placed. Mild pain or sensitivity for a few days is normal — take medicines as prescribed. Do not skip the follow-up visit for the permanent filling or crown, as an untreated tooth can fracture or get re-infected.",
+    ta:"கடைசி பூச்சு/கிரவுன் வைக்கும் வரை சிகிச்சை பெற்ற பல்லில் மெல்ல வேண்டாம். சில நாட்கள் லேசான வலி/உணர்ச்சி இயல்பானது — மருந்துகளை பரிந்துரைத்தபடி எடுத்துக்கொள்ளவும். நிரந்தர பூச்சு/கிரவுனுக்கான அடுத்த வருகையை தவிர்க்க வேண்டாம், இல்லையெனில் பல் உடையலாம் அல்லது மீண்டும் தொற்று ஏற்படலாம்." },
+  surgery: { label:'Post-Surgical / Implant Instructions',
+    en:"Apply an ice pack outside the face for the first 24 hours (20 min on, 10 min off) to reduce swelling. Take all medicines as prescribed, completing the full antibiotic course. Avoid smoking, alcohol and strenuous exercise for a week. Keep the surgical area clean but do not disturb it with fingers or a brush directly. Report immediately if you notice heavy bleeding, fever, or increasing pain.",
+    ta:"முதல் 24 மணி நேரம் முகத்தின் வெளிப்புறத்தில் ஐஸ் பேக் வைக்கவும் (20 நிமிடம் வைத்து 10 நிமிடம் நிறுத்தவும்) — வீக்கத்தைக் குறைக்க உதவும். மருந்துகளை முழுமையாக பரிந்துரைத்தபடி எடுத்துக்கொள்ளவும். ஒரு வாரம் புகைபிடித்தல், மது, கடின உடற்பயிற்சி தவிர்க்கவும். சிகிச்சை பகுதியை சுத்தமாக வைத்திருக்கவும், விரல்/தூரிகையால் நேரடியாக தொந்தரவு செய்ய வேண்டாம். அதிக ரத்தப்போக்கு, காய்ச்சல் அல்லது வலி அதிகரித்தால் உடனே தெரிவிக்கவும்." },
+  denture: { label:'Denture Care Instructions',
+    en:"Remove and clean your denture after every meal with a soft brush and mild soap — avoid toothpaste as it can scratch it. Take the denture out at night and soak it in water or a denture-cleaning solution. Expect some initial soreness while adjusting; contact the clinic if a sore spot doesn't improve in a few days. Come back for periodic check-ups.",
+    ta:"ஒவ்வொரு உணவுக்குப் பிறகும் டென்சரை கழற்றி மென்மையான தூரிகை மற்றும் லேசான சோப்பால் சுத்தம் செய்யவும் — பற்பசை பயன்படுத்த வேண்டாம், அது சிராய்ப்பை ஏற்படுத்தும். இரவில் டென்சரை கழற்றி தண்ணீரில் அல்லது டென்சர் சுத்தம் செய்யும் கரைசலில் ஊற வைக்கவும். ஆரம்பத்தில் லேசான வலி இருக்கலாம்; சில நாட்களுக்குப் பிறகும் குறையவில்லை என்றால் கிளினிக்கை தொடர்பு கொள்ளவும். அவ்வப்போது பரிசோதனைக்கு வரவும்." },
+};
+
+function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(s){ if(!s) return ''; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtTime(t){ if(!t) return ''; const [h,m]=t.split(':'); const hh=parseInt(h,10); const ap = hh>=12?'PM':'AM'; const h12 = ((hh+11)%12)+1; return `${h12}:${m} ${ap}`; }
+function esc(s){ return (s===undefined||s===null) ? '' : String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function initials(name){ return (name||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._h); toast._h=setTimeout(()=>t.classList.remove('show'),2400); }
+function askConfirm(message){
+  // Replaces native window.confirm(), which is unreliable (often silently
+  // does nothing) inside mobile browsers and especially inside APK-wrapped
+  // web apps. Returns a Promise<boolean> resolved by the user's tap.
+  return new Promise((resolve)=>{
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.style.zIndex = '300';
+    overlay.innerHTML = `<div class="modal" style="max-width:340px;">
+      <div class="modal-body" style="padding-top:20px;">
+        <p style="font-size:14px;line-height:1.5;margin:0 0 16px;">${esc(message)}</p>
+        <div class="btn-row" style="justify-content:flex-end;">
+          <button class="btn secondary" id="askConfirmNo">Cancel</button>
+          <button class="btn danger" id="askConfirmYes">Yes, continue</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    const cleanup = (result)=>{ overlay.remove(); resolve(result); };
+    overlay.querySelector('#askConfirmNo').onclick = ()=>cleanup(false);
+    overlay.querySelector('#askConfirmYes').onclick = ()=>cleanup(true);
+    overlay.onclick = (e)=>{ if(e.target===overlay) cleanup(false); };
+  });
+}
+function waLink(phone, text){
+  let p = (phone||'').replace(/\D/g,'');
+  if(p.length===10) p = '91'+p;
+  return `https://wa.me/${p}?text=${encodeURIComponent(text)}`;
+}
+
+/* ============ LOAD / SAVE ============ */
+async function loadAll(){
+  const [d,p,ops,vl,a,im,mt,mat,ci] = await Promise.all([
+    sGet('dentists'), sGet('patients'), sGet('ops'), sGet('visitLogs'),
+    sGet('appointments'), sGet('images-meta'), sGet('medTemplates'), sGet('materials'), sGet('clinicInfo')
+  ]);
+  DB.dentists = d || [];
+  DB.patients = p || [];
+  DB.ops = ops || [];
+  DB.visitLogs = vl || [];
+  DB.appointments = a || [];
+  DB.imagesMeta = im || [];
+  DB.medTemplates = mt || [];
+  DB.materials = mat || [];
+  DB.clinicInfo = ci || {name:'', phone:'', address:''};
+  loaded = true;
+}
+function clinicDisplayName(){ return (DB.clinicInfo && DB.clinicInfo.name) ? DB.clinicInfo.name : 'Dental Workspace'; }
+async function saveDentists(){ await sSet('dentists', DB.dentists); }
+async function savePatients(){ await sSet('patients', DB.patients); }
+async function saveOps(){ await sSet('ops', DB.ops); }
+async function saveVisitLogs(){ await sSet('visitLogs', DB.visitLogs); }
+async function saveClinicInfo(){ await sSet('clinicInfo', DB.clinicInfo); }
+async function saveAppointments(){ await sSet('appointments', DB.appointments); }
+async function saveImagesMeta(){ await sSet('images-meta', DB.imagesMeta); }
+async function saveMedTemplates(){ await sSet('medTemplates', DB.medTemplates); }
+async function saveMaterials(){ await sSet('materials', DB.materials); }
+
+/* ============ BOOT / RENDER ROOT ============ */
+async function boot(){
+  applyTheme();
+  render();
+  await loadAll();
+  if(!DB.dentists.find(x=>x.name===me)) me = null;
+  render();
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(!loaded){
+    app.innerHTML = `<div class="setup-wrap"><div class="setup-card" style="text-align:center;color:var(--muted);"><div class="brand-mark" style="margin:0 auto;">DW</div><p style="margin-top:14px;">Loading workspace <span class="loading-dot"></span></p></div></div>`;
+    return;
+  }
+  if(!me){ renderSetup(app); return; }
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark">DW</div>
+        <div><div class="brand-name">Dental Workspace</div><div class="brand-sub">Clinic Workspace</div></div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn" id="manageBtn" title="Business manager">📊</button>
+        <div class="dentist-pill" id="switchDentist">
+          <div class="avatar" id="myAvatar">${esc(initials(me))}</div>
+          <span>${esc(me)}</span><span style="opacity:.6;font-size:11px;">▾</span>
+        </div>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button data-view="dashboard" class="${view==='dashboard'?'active':''}">Dashboard</button>
+      <button data-view="patients" class="${view==='patients'?'active':''}">Patients</button>
+      <button data-view="book" class="${view==='book'?'active':''}">Book Appointment</button>
+    </nav>
+    <main id="main"></main>
+  `;
+  const myDoc = DB.dentists.find(d=>d.name===me);
+  if(myDoc && myDoc.photoId){ loadDocPhotoInto(document.getElementById('myAvatar'), myDoc.photoId); }
+  document.getElementById('switchDentist').onclick = ()=>{ me=null; localStorage.removeItem('dw1708_me'); render(); };
+  document.getElementById('manageBtn').onclick = ()=>{ renderManageOverlay(); };
+  app.querySelectorAll('nav.tabs button').forEach(b=>{ b.onclick = ()=>{ view=b.dataset.view; render(); }; });
+  const main = document.getElementById('main');
+  if(view==='dashboard') renderDashboard(main);
+  else if(view==='patients') renderPatients(main);
+  else if(view==='book') renderBook(main);
+  if(openPatientId) renderPatientModal();
+}
+
+async function loadDocPhotoInto(el, photoId){
+  const rec = await sGet('docimg:'+photoId);
+  if(rec && rec.dataUrl){ el.innerHTML = `<img src="${rec.dataUrl}">`; }
+}
+
+/* ============ SETUP SCREEN ============ */
+function renderSetup(app){
+  app.innerHTML = `
+  <div class="setup-wrap"><div class="setup-card">
+    <div class="brand-mark" style="margin:0 auto 14px;">DW</div>
+    <h1>Dental Workspace</h1>
+    <p class="sub">Shared case &amp; appointment workspace. Pick your name to continue.</p>
+    <div id="dentistList"></div>
+    <div class="field" style="margin-top:14px;">
+      <label>Add yourself</label>
+      <div style="display:flex;gap:8px;"><input type="text" id="newDentistName" placeholder="Dr. Full Name"><button class="btn" id="addDentistBtn">Add</button></div>
+    </div>
+  </div></div>`;
+  const list = document.getElementById('dentistList');
+  if(DB.dentists.length===0){
+    list.innerHTML = `<p style="font-size:13px;color:var(--muted);">No dentists yet — add yourself below to set up the workspace.</p>`;
+  }else{
+    list.innerHTML = DB.dentists.map(d=>`
+      <div class="dentist-choice" data-name="${esc(d.name)}">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:30px;height:30px;border-radius:50%;background:var(--teal-tint);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">${esc(initials(d.name))}</div>
+          <span style="font-weight:600;font-size:14px;">${esc(d.name)}</span>
+        </div><span style="color:var(--muted);">→</span>
+      </div>`).join('');
+    list.querySelectorAll('.dentist-choice').forEach(el=>{
+      el.onclick = ()=>{ me = el.dataset.name; localStorage.setItem('dw1708_me', me); render(); };
+    });
+  }
+  document.getElementById('addDentistBtn').onclick = async ()=>{
+    const inp = document.getElementById('newDentistName');
+    const name = inp.value.trim();
+    if(!name) return;
+    if(!DB.dentists.find(d=>d.name.toLowerCase()===name.toLowerCase())){
+      DB.dentists.push({id:genId(), name, bio:'', photoId:null});
+      await saveDentists();
+    }
+    me = name; localStorage.setItem('dw1708_me', me);
+    render();
+  };
+}
+
+/* ============ DASHBOARD ============ */
+function renderDashboard(main){
+  const today = todayStr();
+  const todaysAppts = DB.appointments.filter(a=>a.date===today).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  const todaysVisits = DB.visitLogs.filter(v=>v.date===today);
+  const collected = todaysVisits.reduce((s,v)=>s+(Number(v.paymentAmount)||0),0);
+
+  main.innerHTML = `
+    <div class="section-title">Today <span class="eyebrow">${fmtDate(today)}</span></div>
+    <div class="stats-row">
+      <div class="stat"><div class="v">${todaysAppts.length}</div><div class="l">Appointments today</div></div>
+      <div class="stat"><div class="v">${todaysVisits.length}</div><div class="l">Cases logged today</div></div>
+      <div class="stat"><div class="v">₹${collected.toLocaleString('en-IN')}</div><div class="l">Collected today</div></div>
+    </div>
+
+    <div class="section-title">Today's Appointments</div>
+    <div class="plist" id="todayList"></div>
+
+    <div class="section-title">Patient Flow</div>
+    <div class="flow-cols" id="flowCols"></div>
+
+    <div class="section-title">Quick search</div>
+    <div class="search-bar"><span>🔍</span><input type="text" id="dashSearch" placeholder="Search patients by name or phone…"></div>
+    <div class="plist" id="dashResults"></div>
+  `;
+
+  const todayListEl = document.getElementById('todayList');
+  todayListEl.innerHTML = todaysAppts.length ? todaysAppts.map(a=>{
+    const st = STATUSES.find(s=>s.k===a.status)||STATUSES[0];
+    const done = a.status==='completed';
+    return `<div class="prow" data-openpt="${a.patientId}" data-apptid="${a.id}">
+      <div class="check ${done?'done':''}" data-strike="${a.id}">${done?'✓':''}</div>
+      <div><div class="pname">${esc(a.patientName)}</div><div class="pmeta">${fmtTime(a.time)} · Dr. ${esc(a.dentist)}${a.reason?(' · '+esc(a.reason)):''}</div></div>
+      <span class="chip ${st.cls}" style="margin-left:auto;">${st.l}</span>
+    </div>`;
+  }).join('') : `<div class="empty-state" style="padding:20px;">No appointments today.</div>`;
+  todayListEl.querySelectorAll('[data-strike]').forEach(el=>{
+    el.onclick = async (e)=>{
+      e.stopPropagation();
+      const appt = DB.appointments.find(a=>a.id===el.dataset.strike);
+      appt.status = appt.status==='completed' ? 'scheduled' : 'completed';
+      await saveAppointments();
+      renderDashboard(main);
+    };
+  });
+  todayListEl.querySelectorAll('.prow').forEach(el=>{
+    el.onclick = ()=>{ openPatientFromAppointment(el.dataset.openpt); };
+  });
+
+  const flowGroups = {
+    scheduled: todaysAppts.filter(a=>a.status==='scheduled'),
+    waiting: todaysAppts.filter(a=>a.status==='waiting'),
+    inchair: todaysAppts.filter(a=>a.status==='inchair'),
+    completed: todaysAppts.filter(a=>a.status==='completed'),
+  };
+  const cols = [{k:'scheduled',l:'Scheduled'},{k:'waiting',l:'Waiting'},{k:'inchair',l:'In Chair'},{k:'completed',l:'Completed'}];
+  const flowEl = document.getElementById('flowCols');
+  flowEl.innerHTML = cols.map(c=>{
+    const items = flowGroups[c.k];
+    return `<div class="flow-col"><h4>${c.l} <span>${items.length}</span></h4>
+      ${items.length? items.map(a=>`<div class="flow-card" data-appt="${a.id}"><div class="t">${fmtTime(a.time)} · ${esc(a.dentist)}</div><div class="n">${esc(a.patientName)}</div></div>`).join('') : `<div class="flow-empty">—</div>`}
+    </div>`;
+  }).join('');
+  flowEl.querySelectorAll('.flow-card').forEach(el=>{
+    el.onclick = ()=>{ const appt = DB.appointments.find(a=>a.id===el.dataset.appt); if(appt) openApptStatusPrompt(appt); };
+  });
+
+  const searchInp = document.getElementById('dashSearch');
+  const resultsEl = document.getElementById('dashResults');
+  searchInp.oninput = ()=>{
+    const q = searchInp.value.trim().toLowerCase();
+    if(!q){ resultsEl.innerHTML=''; return; }
+    const matches = DB.patients.filter(p=>p.name.toLowerCase().includes(q) || (p.phone||'').includes(q)).slice(0,8);
+    resultsEl.innerHTML = matches.length ? matches.map(patientRowHTML).join('') : `<div class="empty-state" style="padding:16px;">No matches</div>`;
+    resultsEl.querySelectorAll('.prow').forEach(el=>{ el.onclick = ()=>{ openPatientId=el.dataset.id; patientTab='overview'; activeOpId=null; render(); }; });
+  };
+}
+
+function openPatientFromAppointment(patientId){
+  const openOps = DB.ops.filter(o=>o.patientId===patientId && o.status==='open');
+  openPatientId = patientId; patientTab = 'cases';
+  activeOpId = openOps.length===1 ? openOps[0].id : null;
+  render();
+}
+
+function openApptStatusPrompt(appt){
+  const idx = DB.appointments.findIndex(a=>a.id===appt.id);
+  const overlay = document.createElement('div');
+  overlay.className='overlay';
+  overlay.innerHTML = `<div class="modal" style="max-width:380px;">
+    <div class="modal-head"><strong>${esc(appt.patientName)}</strong><button class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-top:0;">${fmtTime(appt.time)} with ${esc(appt.dentist)} — ${esc(appt.reason||'')}</p>
+      <label>Update status</label>
+      <div class="btn-row">${STATUSES.map(s=>`<button class="btn small ${appt.status===s.k?'':'secondary'}" data-s="${s.k}">${s.l}</button>`).join('')}</div>
+      <div style="margin-top:16px;display:flex;justify-content:space-between;">
+        <button class="btn ghost" id="openPtBtn">Open case sheet →</button>
+        <button class="btn danger small" id="delApptBtn">Delete appointment</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('.modal-close').onclick = ()=>overlay.remove();
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.querySelectorAll('[data-s]').forEach(b=>{
+    b.onclick = async ()=>{ DB.appointments[idx].status=b.dataset.s; await saveAppointments(); overlay.remove(); render(); };
+  });
+  overlay.querySelector('#openPtBtn').onclick = ()=>{ overlay.remove(); openPatientFromAppointment(appt.patientId); };
+  overlay.querySelector('#delApptBtn').onclick = async ()=>{
+    if(!(await askConfirm('Delete this appointment?'))) return;
+    DB.appointments.splice(idx,1); await saveAppointments(); overlay.remove(); render();
+  };
+}
+
+/* ============ PATIENTS LIST ============ */
+function patientRowHTML(p){
+  const lastOp = DB.ops.filter(o=>o.patientId===p.id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))[0];
+  return `<div class="prow" data-id="${p.id}">
+    <div class="initial">${esc(initials(p.name))}</div>
+    <div><div class="pname">${esc(p.name)}</div><div class="pmeta">${p.age?p.age+' yrs · ':''}${esc(p.phone||'')}${lastOp? ' · last case '+fmtDate(lastOp.createdAt.slice(0,10)):''}</div></div>
+    <div class="parrow">›</div>
+  </div>`;
+}
+function renderPatients(main){
+  main.innerHTML = `
+    <div class="section-title">Patients <span class="eyebrow">${DB.patients.length} total</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+      <div class="search-bar" style="flex:1;min-width:200px;"><span>🔍</span><input type="text" id="pSearch" placeholder="Search by name or phone…" value="${esc(searchQ)}"></div>
+      <button class="btn" id="newPatientBtn">+ New Patient</button>
+    </div>
+    <div class="plist" id="plistEl"></div>
+  `;
+  const listEl = document.getElementById('plistEl');
+  function draw(){
+    const q = searchQ.trim().toLowerCase();
+    let list = DB.patients.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+    if(q) list = list.filter(p=>p.name.toLowerCase().includes(q) || (p.phone||'').includes(q));
+    listEl.innerHTML = list.length ? list.map(patientRowHTML).join('') : `<div class="empty-state"><div class="em-icon">🗂️</div>No patients found.</div>`;
+    listEl.querySelectorAll('.prow').forEach(el=>{ el.onclick = ()=>{ openPatientId=el.dataset.id; patientTab='overview'; activeOpId=null; render(); }; });
+  }
+  draw();
+  document.getElementById('pSearch').oninput = (e)=>{ searchQ=e.target.value; draw(); };
+  document.getElementById('newPatientBtn').onclick = ()=>openNewPatientModal();
+}
+
+function openNewPatientModal(prefillCb){
+  const overlay = document.createElement('div');
+  overlay.className='overlay';
+  overlay.innerHTML = `<div class="modal" style="max-width:480px;">
+    <div class="modal-head"><strong>New Patient</strong><button class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Full name *</label><input type="text" id="npName"></div>
+      <div class="grid2">
+        <div class="field"><label>Age</label><input type="number" id="npAge" min="0" max="120"></div>
+        <div class="field"><label>Gender</label><select id="npGender"><option value="">—</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+      </div>
+      <div class="field"><label>Phone number *</label><input type="tel" id="npPhone" placeholder="10-digit mobile"></div>
+      <div class="field"><label>Address (optional)</label><textarea id="npAddress" style="min-height:44px;"></textarea></div>
+      <div class="btn-row" style="justify-content:flex-end;margin-top:6px;">
+        <button class="btn secondary" id="npCancel">Cancel</button>
+        <button class="btn" id="npSave">Save Patient</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  const close = ()=>overlay.remove();
+  overlay.querySelector('.modal-close').onclick = close;
+  overlay.querySelector('#npCancel').onclick = close;
+  overlay.onclick = (e)=>{ if(e.target===overlay) close(); };
+  overlay.querySelector('#npSave').onclick = async ()=>{
+    const name = document.getElementById('npName').value.trim();
+    const phone = document.getElementById('npPhone').value.trim();
+    if(!name || !phone){ toast('Name and phone are required'); return; }
+    const p = { id:genId(), name, phone, age:document.getElementById('npAge').value||'', gender:document.getElementById('npGender').value||'', address:document.getElementById('npAddress').value.trim(), createdAt:new Date().toISOString() };
+    DB.patients.push(p); await savePatients(); close(); toast('Patient added');
+    if(prefillCb) prefillCb(p); else { openPatientId=p.id; patientTab='overview'; activeOpId=null; render(); }
+  };
+}
+
+/* ============ BOOK APPOINTMENT (global) ============ */
+function renderBook(main){
+  main.innerHTML = `
+    <div class="section-title">Book Appointment</div>
+    <div class="card" style="padding:18px;">
+      <div class="field"><label>Patient *</label>
+        <input type="text" id="bkPatientSearch" placeholder="Search patient by name or phone…">
+        <div id="bkPatientResults" style="margin-top:6px;"></div>
+        <div id="bkSelectedPatient" style="margin-top:8px;"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>Date *</label><input type="date" id="bkDate" value="${todayStr()}"></div>
+        <div class="field"><label>Time *</label><input type="time" id="bkTime" value="10:00"></div>
+        <div class="field"><label>Dentist</label><select id="bkDentist">${DB.dentists.map(d=>`<option ${d.name===me?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label>Reason / notes</label><input type="text" id="bkReason" placeholder="e.g. RCT follow-up, scaling, consultation"></div>
+      <div class="btn-row" style="justify-content:flex-end;"><button class="btn" id="bkSave">Book Appointment</button></div>
+    </div>
+  `;
+  let selectedPatient = null;
+  const searchInp = document.getElementById('bkPatientSearch');
+  const resultsEl = document.getElementById('bkPatientResults');
+  const selEl = document.getElementById('bkSelectedPatient');
+  function drawSelected(){ selEl.innerHTML = selectedPatient ? `<div class="chip completed">Selected: ${esc(selectedPatient.name)} · ${esc(selectedPatient.phone||'')}</div>` : ''; }
+  searchInp.oninput = ()=>{
+    const q = searchInp.value.trim().toLowerCase();
+    selectedPatient = null; drawSelected();
+    if(!q){ resultsEl.innerHTML=''; return; }
+    const matches = DB.patients.filter(p=>p.name.toLowerCase().includes(q) || (p.phone||'').includes(q)).slice(0,6);
+    resultsEl.innerHTML = matches.map(p=>`<div class="dentist-choice" data-id="${p.id}"><span>${esc(p.name)} · ${esc(p.phone||'')}</span><span>→</span></div>`).join('')
+      + `<div class="dentist-choice" id="bkNewPatient" style="border-style:dashed;"><span>+ New patient "${esc(searchInp.value.trim())}"</span><span>→</span></div>`;
+    resultsEl.querySelectorAll('[data-id]').forEach(el=>{ el.onclick = ()=>{ selectedPatient=DB.patients.find(p=>p.id===el.dataset.id); drawSelected(); resultsEl.innerHTML=''; searchInp.value=''; }; });
+    const npBtn = document.getElementById('bkNewPatient');
+    if(npBtn) npBtn.onclick = ()=>{ openNewPatientModal((p)=>{ selectedPatient=p; drawSelected(); resultsEl.innerHTML=''; searchInp.value=''; }); };
+  };
+  document.getElementById('bkSave').onclick = async ()=>{
+    if(!selectedPatient){ toast('Select or add a patient first'); return; }
+    const date = document.getElementById('bkDate').value, time = document.getElementById('bkTime').value;
+    if(!date || !time){ toast('Date and time are required'); return; }
+    DB.appointments.push({ id:genId(), patientId:selectedPatient.id, patientName:selectedPatient.name, date, time, dentist:document.getElementById('bkDentist').value, reason:document.getElementById('bkReason').value.trim(), status:'scheduled', createdAt:new Date().toISOString() });
+    await saveAppointments(); toast('Appointment booked'); view='dashboard'; render();
+  };
+}
+
+/* ============ PATIENT MODAL ============ */
+function renderPatientModal(){
+  const p = DB.patients.find(x=>x.id===openPatientId);
+  if(!p){ openPatientId=null; return; }
+  let overlay = document.getElementById('patientOverlay');
+  if(!overlay){
+    overlay = document.createElement('div'); overlay.id='patientOverlay'; overlay.className='overlay';
+    document.body.appendChild(overlay);
+    overlay.onclick = (e)=>{ if(e.target===overlay){ overlay.remove(); openPatientId=null; activeOpId=null; } };
+  }
+  overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-head">
+        <div><strong>${esc(p.name)}</strong><div style="font-size:12px;color:var(--muted);">${p.age?p.age+' yrs · ':''}${esc(p.gender||'')} ${p.gender?'· ':''}${esc(p.phone||'')}</div></div>
+        <button class="modal-close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="patient-tabs">
+          <button data-t="overview" class="${patientTab==='overview'?'active':''}">Overview</button>
+          <button data-t="cases" class="${patientTab==='cases'?'active':''}">Case Sheets</button>
+          <button data-t="appointments" class="${patientTab==='appointments'?'active':''}">Appointments</button>
+          <button data-t="images" class="${patientTab==='images'?'active':''}">Images</button>
+        </div>
+        <div id="ptTabBody"></div>
+      </div>
+    </div>`;
+  overlay.querySelector('.modal-close').onclick = ()=>{ overlay.remove(); openPatientId=null; activeOpId=null; };
+  overlay.querySelectorAll('.patient-tabs button').forEach(b=>{ b.onclick = ()=>{ patientTab=b.dataset.t; renderPatientModal(); }; });
+  const body = overlay.querySelector('#ptTabBody');
+  if(patientTab==='overview') renderPtOverview(body, p);
+  else if(patientTab==='cases') renderPtCases(body, p);
+  else if(patientTab==='appointments') renderPtAppointments(body, p);
+  else if(patientTab==='images') renderPtImages(body, p);
+}
+
+function renderPtOverview(body, p){
+  const ops = DB.ops.filter(o=>o.patientId===p.id);
+  const visits = DB.visitLogs.filter(v=>v.patientId===p.id);
+  const totalPaid = visits.reduce((s,v)=>s+(Number(v.paymentAmount)||0),0);
+  body.innerHTML = `
+    <div class="grid2">
+      <div class="field"><label>Full name</label><input type="text" id="ovName" value="${esc(p.name)}"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="ovPhone" value="${esc(p.phone||'')}"></div>
+      <div class="field"><label>Age</label><input type="number" id="ovAge" value="${esc(p.age||'')}"></div>
+      <div class="field"><label>Gender</label><select id="ovGender">
+        <option value="" ${!p.gender?'selected':''}>—</option>
+        <option ${p.gender==='Male'?'selected':''}>Male</option>
+        <option ${p.gender==='Female'?'selected':''}>Female</option>
+        <option ${p.gender==='Other'?'selected':''}>Other</option>
+      </select></div>
+    </div>
+    <div class="field"><label>Address</label><textarea id="ovAddress" style="min-height:44px;">${esc(p.address||'')}</textarea></div>
+    <div class="btn-row"><button class="btn secondary small" id="ovSave">Save changes</button></div>
+    <div class="stats-row" style="margin-top:18px;">
+      <div class="stat"><div class="v">${ops.length}</div><div class="l">Case sheets (OPs)</div></div>
+      <div class="stat"><div class="v">₹${totalPaid.toLocaleString('en-IN')}</div><div class="l">Total collected</div></div>
+      <div class="stat"><div class="v">${DB.appointments.filter(a=>a.patientId===p.id && a.status==='scheduled').length}</div><div class="l">Upcoming appts</div></div>
+    </div>
+    <div class="btn-row" style="margin-top:18px;">
+      <button class="btn gold" id="printBtn">🖨️ Print case sheet</button>
+      <button class="btn secondary" id="waBtn">💬 Share summary on WhatsApp</button>
+      <button class="btn danger" id="delPtBtn" style="margin-left:auto;">Delete patient</button>
+    </div>
+  `;
+  body.querySelector('#ovSave').onclick = async ()=>{
+    p.name=document.getElementById('ovName').value.trim()||p.name;
+    p.phone=document.getElementById('ovPhone').value.trim();
+    p.age=document.getElementById('ovAge').value;
+    p.gender=document.getElementById('ovGender').value;
+    p.address=document.getElementById('ovAddress').value.trim();
+    await savePatients(); toast('Saved'); renderPatientModal();
+  };
+  body.querySelector('#printBtn').onclick = ()=>printCaseSheet(p);
+  body.querySelector('#waBtn').onclick = ()=>shareWhatsAppSummary(p);
+  body.querySelector('#delPtBtn').onclick = async ()=>{
+    if(!(await askConfirm(`Delete ${p.name} and all their records? This cannot be undone.`))) return;
+    DB.patients = DB.patients.filter(x=>x.id!==p.id);
+    DB.ops = DB.ops.filter(o=>o.patientId!==p.id);
+    DB.visitLogs = DB.visitLogs.filter(v=>v.patientId!==p.id);
+    DB.appointments = DB.appointments.filter(a=>a.patientId!==p.id);
+    DB.imagesMeta = DB.imagesMeta.filter(im=>im.patientId!==p.id);
+    await Promise.all([savePatients(), saveOps(), saveVisitLogs(), saveAppointments(), saveImagesMeta()]);
+    document.getElementById('patientOverlay').remove(); openPatientId=null;
+    toast('Patient deleted'); render();
+  };
+}
+
+/* ---- Case Sheets (OPs) tab ---- */
+function renderPtCases(body, p){
+  const ops = DB.ops.filter(o=>o.patientId===p.id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt));
+  if(!activeOpId && ops.length){
+    const openOnes = ops.filter(o=>o.status==='open');
+    // leave activeOpId null to show picker unless exactly one open op and coming fresh
+  }
+  body.innerHTML = `
+    <div class="btn-row" style="margin-bottom:12px;">
+      <button class="btn small" id="newOpBtn">+ New OP / Case Sheet</button>
+      ${activeOpId ? `<button class="btn secondary small" id="backToListBtn">← All case sheets</button>` : ''}
+    </div>
+    <div id="opArea"></div>
+  `;
+  document.getElementById('newOpBtn').onclick = async ()=>{
+    const op = { id:genId(), patientId:p.id, createdAt:new Date().toISOString(), status:'open',
+      chiefComplaint:{symptom:'', duration:'', durationUnit:'days', region:'', text:''},
+      medicalHistory:{}, findings:[], diagnosis:[], diagnosisManual:'', treatmentPlan:[], treatmentManual:'',
+      crownMaterial:'', crownStatus:'none' };
+    DB.ops.push(op); await saveOps(); activeOpId=op.id; renderPtCases(body, p);
+  };
+  const backBtn = document.getElementById('backToListBtn');
+  if(backBtn) backBtn.onclick = ()=>{ activeOpId=null; renderPtCases(body,p); };
+
+  const area = document.getElementById('opArea');
+  if(activeOpId){
+    const op = DB.ops.find(o=>o.id===activeOpId);
+    if(op) renderOpEditor(area, p, op); else { activeOpId=null; renderPtCases(body,p); }
+    return;
+  }
+  area.innerHTML = ops.length ? ops.map(op=>{
+    const vlog = DB.visitLogs.filter(v=>v.opId===op.id);
+    return `<div class="op-card" data-op="${op.id}">
+      <span class="chip ${op.status==='open'?'waiting':'completed'} opstatus">${op.status==='open'?'Open':'Closed'}</span>
+      <strong>${esc(op.chiefComplaint && op.chiefComplaint.text ? op.chiefComplaint.text : 'New case sheet')}</strong>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Opened ${fmtDate(op.createdAt.slice(0,10))} · ${vlog.length} visit${vlog.length===1?'':'s'} logged</div>
+    </div>`;
+  }).join('') : `<div class="empty-state"><div class="em-icon">📋</div>No case sheets yet. Start a new OP above.</div>`;
+  area.querySelectorAll('.op-card').forEach(el=>{ el.onclick = ()=>{ activeOpId=el.dataset.op; renderPtCases(body,p); }; });
+}
+
+function suggestDiagnosisList(op){
+  const seen = new Set(op.diagnosis||[]);
+  return (op.findings||[]).map(f=>{
+    const ft = FINDING_TYPES.find(x=>x.k===f.type);
+    return ft ? ft.diag(f.tooth||'—') : null;
+  }).filter(Boolean).filter(d=>!seen.has(d));
+}
+function suggestTreatmentList(op){
+  const seen = new Set(op.treatmentPlan||[]);
+  const diags = (op.diagnosis||[]).length ? op.diagnosis : suggestDiagnosisList(op);
+  return diags.map(d=>{
+    const toothMatch = d.match(/irt (\S+)$/);
+    return diagToTreatment(d, toothMatch?toothMatch[1]:'');
+  }).filter(t=>!seen.has(t));
+}
+
+function renderOpEditor(area, p, op){
+  const cc = op.chiefComplaint || {symptom:'',duration:'',durationUnit:'days',region:'',text:''};
+  const mh = op.medicalHistory || {};
+  const vlogs = DB.visitLogs.filter(v=>v.opId===op.id).sort((a,b)=>b.date.localeCompare(a.date));
+  area.innerHTML = `
+    <div class="card" style="padding:16px;margin-bottom:14px;">
+      <div class="section-title" style="margin-top:0;font-size:16px;">Chief Complaint
+        <span><button class="btn ghost small" id="toggleOpStatus">${op.status==='open'?'Mark closed':'Reopen'}</button></span>
+      </div>
+      <label>Symptom</label>
+      <div class="pill-group" id="ccSymptom">${CC_SYMPTOMS.map(s=>`<button class="pill-opt ${cc.symptom===s?'sel':''}" data-v="${esc(s)}">${s}</button>`).join('')}</div>
+      <div class="grid2" style="margin-top:12px;">
+        <div class="field"><label>Duration</label>
+          <div style="display:flex;gap:6px;"><input type="number" id="ccDur" min="0" value="${esc(cc.duration)}" style="flex:1;"><select id="ccDurUnit" style="flex:1;">${DURATION_UNITS.map(u=>`<option ${cc.durationUnit===u?'selected':''}>${u}</option>`).join('')}</select></div>
+        </div>
+        <div class="field"><label>Region</label><select id="ccRegion"><option value="">—</option>${CC_REGIONS.map(r=>`<option ${cc.region===r?'selected':''}>${r}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label>Auto-generated complaint (editable)</label><textarea id="ccText" style="min-height:40px;">${esc(cc.text)}</textarea></div>
+      <button class="btn secondary small" id="ccRegen">↻ Regenerate from selections</button>
+
+      <div class="section-title" style="font-size:16px;">Past Medical History</div>
+      <div class="pill-group">${MED_HISTORY_ITEMS.map(m=>`<button class="pill-opt ${mh[m.k]?'sel':''}" data-mh="${m.k}">${m.l}</button>`).join('')}</div>
+      <div class="field" style="margin-top:10px;"><label>Other / notes (allergies, medications, etc.)</label><textarea id="mhOther" style="min-height:40px;">${esc(mh.other||'')}</textarea></div>
+
+      <div class="section-title" style="font-size:16px;">Findings</div>
+      <div class="grid2">
+        <select id="findType">${FINDING_TYPES.map(f=>`<option value="${f.k}">${f.l}</option>`).join('')}</select>
+        <input type="text" id="findTooth" placeholder="Tooth number(s), e.g. 16, 17">
+      </div>
+      <button class="btn small" id="addFindingBtn" style="margin-top:8px;">+ Add finding</button>
+      <div id="findingsList" style="margin-top:10px;"></div>
+
+      <div class="section-title" style="font-size:16px;">Diagnosis</div>
+      <div id="diagSuggest"></div>
+      <div id="diagList"></div>
+      <div class="field"><label>Add diagnosis manually</label><div style="display:flex;gap:6px;"><input type="text" id="diagManualInput" placeholder="Type a diagnosis and press Add"><button class="btn secondary small" id="diagManualAdd">Add</button></div></div>
+
+      <div class="section-title" style="font-size:16px;">Treatment Plan</div>
+      <div id="treatSuggest"></div>
+      <div id="treatList"></div>
+      <div class="field"><label>Add treatment plan item manually</label><div style="display:flex;gap:6px;"><input type="text" id="treatManualInput" placeholder="Type a treatment and press Add"><button class="btn secondary small" id="treatManualAdd">Add</button></div></div>
+
+      <div id="crownSection"></div>
+
+      <div class="btn-row" style="margin-top:14px;"><button class="btn" id="saveCaseHeaderBtn">Save Case Sheet</button></div>
+    </div>
+
+    <div class="section-title" style="font-size:16px;">Visit Log <span class="eyebrow">${vlogs.length} entr${vlogs.length===1?'y':'ies'}</span></div>
+    <div class="btn-row" style="margin-bottom:10px;"><button class="btn small" id="addVisitLogBtn">+ Add Visit Entry</button></div>
+    <div id="visitLogForm"></div>
+    <div id="visitLogListEl"></div>
+  `;
+
+  /* chief complaint pills */
+  area.querySelector('#ccSymptom').querySelectorAll('.pill-opt').forEach(b=>{
+    b.onclick = ()=>{ cc.symptom = (cc.symptom===b.dataset.v) ? '' : b.dataset.v; regenCC(); redrawSymptomPills(); };
+  });
+  function redrawSymptomPills(){ area.querySelectorAll('#ccSymptom .pill-opt').forEach(b=>b.classList.toggle('sel', b.dataset.v===cc.symptom)); }
+  area.querySelector('#ccDur').oninput = (e)=>{ cc.duration=e.target.value; regenCC(); };
+  area.querySelector('#ccDurUnit').onchange = (e)=>{ cc.durationUnit=e.target.value; regenCC(); };
+  area.querySelector('#ccRegion').onchange = (e)=>{ cc.region=e.target.value; regenCC(); };
+  area.querySelector('#ccText').oninput = (e)=>{ cc.text=e.target.value; };
+  function regenCC(){
+    let parts = [];
+    if(cc.symptom) parts.push(cc.symptom);
+    if(cc.region) parts.push('in the '+cc.region.toLowerCase());
+    if(cc.duration) parts.push(`since ${cc.duration} ${cc.durationUnit}`);
+    cc.text = parts.length ? ('Patient presents with ' + parts.join(' ') + '.') : '';
+    area.querySelector('#ccText').value = cc.text;
+  }
+  area.querySelector('#ccRegen').onclick = regenCC;
+
+  /* medical history pills */
+  area.querySelectorAll('[data-mh]').forEach(b=>{
+    b.onclick = ()=>{ mh[b.dataset.mh] = !mh[b.dataset.mh]; b.classList.toggle('sel'); };
+  });
+
+  /* findings */
+  function drawFindings(){
+    const el = area.querySelector('#findingsList');
+    el.innerHTML = (op.findings||[]).length ? op.findings.map(f=>{
+      const ft = FINDING_TYPES.find(x=>x.k===f.type);
+      return `<div class="finding-row"><span class="ft">${ft?ft.l:f.type}</span><span class="tn">${esc(f.tooth||'—')}</span><button class="rm" data-rm="${f.id}">✕</button></div>`;
+    }).join('') : `<p style="font-size:12.5px;color:var(--muted);">No findings added yet.</p>`;
+    el.querySelectorAll('[data-rm]').forEach(b=>{ b.onclick=()=>{ op.findings = op.findings.filter(f=>f.id!==b.dataset.rm); drawFindings(); drawDiagSuggest(); drawTreatSuggest(); }; });
+  }
+  area.querySelector('#addFindingBtn').onclick = ()=>{
+    const type = area.querySelector('#findType').value;
+    const tooth = area.querySelector('#findTooth').value.trim();
+    op.findings = op.findings || [];
+    op.findings.push({id:genId(), type, tooth});
+    area.querySelector('#findTooth').value='';
+    drawFindings(); drawDiagSuggest(); drawTreatSuggest();
+  };
+
+  /* diagnosis */
+  function drawDiagSuggest(){
+    const el = area.querySelector('#diagSuggest');
+    const sugg = suggestDiagnosisList(op);
+    el.innerHTML = sugg.length ? `<div class="suggest-box"><strong style="font-size:11px;text-transform:uppercase;color:var(--gold);">Suggested from findings</strong>${sugg.map(s=>`<div class="sline"><span>${esc(s)}</span><button data-add="${esc(s)}">+ Add</button></div>`).join('')}</div>` : '';
+    el.querySelectorAll('[data-add]').forEach(b=>{ b.onclick=()=>{ op.diagnosis=op.diagnosis||[]; op.diagnosis.push(b.dataset.add); drawDiagList(); drawDiagSuggest(); drawTreatSuggest(); }; });
+  }
+  function drawDiagList(){
+    const el = area.querySelector('#diagList');
+    el.innerHTML = (op.diagnosis||[]).length ? op.diagnosis.map((d,i)=>`<div class="finding-row"><span>${esc(d)}</span><button class="rm" data-rmd="${i}">✕</button></div>`).join('') : `<p style="font-size:12.5px;color:var(--muted);">No diagnosis added yet.</p>`;
+    el.querySelectorAll('[data-rmd]').forEach(b=>{ b.onclick=()=>{ op.diagnosis.splice(Number(b.dataset.rmd),1); drawDiagList(); drawTreatSuggest(); }; });
+  }
+  area.querySelector('#diagManualAdd').onclick = ()=>{
+    const inp = area.querySelector('#diagManualInput'); const v=inp.value.trim();
+    if(!v) return; op.diagnosis=op.diagnosis||[]; op.diagnosis.push(v); inp.value=''; drawDiagList(); drawTreatSuggest();
+  };
+
+  /* treatment plan */
+  function drawTreatSuggest(){
+    const el = area.querySelector('#treatSuggest');
+    const sugg = suggestTreatmentList(op);
+    el.innerHTML = sugg.length ? `<div class="suggest-box"><strong style="font-size:11px;text-transform:uppercase;color:var(--gold);">Suggested from diagnosis</strong>${sugg.map(s=>`<div class="sline"><span>${esc(s)}</span><button data-addt="${esc(s)}">+ Add</button></div>`).join('')}</div>` : '';
+    el.querySelectorAll('[data-addt]').forEach(b=>{ b.onclick=()=>{ op.treatmentPlan=op.treatmentPlan||[]; op.treatmentPlan.push(b.dataset.addt); drawTreatList(); drawTreatSuggest(); drawCrownSection(); }; });
+  }
+  function drawTreatList(){
+    const el = area.querySelector('#treatList');
+    el.innerHTML = (op.treatmentPlan||[]).length ? op.treatmentPlan.map((t,i)=>`<div class="finding-row"><span>${esc(t)}</span><button class="rm" data-rmt="${i}">✕</button></div>`).join('') : `<p style="font-size:12.5px;color:var(--muted);">No treatment plan added yet.</p>`;
+    el.querySelectorAll('[data-rmt]').forEach(b=>{ b.onclick=()=>{ op.treatmentPlan.splice(Number(b.dataset.rmt),1); drawTreatList(); drawCrownSection(); }; });
+  }
+  area.querySelector('#treatManualAdd').onclick = ()=>{
+    const inp = area.querySelector('#treatManualInput'); const v=inp.value.trim();
+    if(!v) return; op.treatmentPlan=op.treatmentPlan||[]; op.treatmentPlan.push(v); inp.value=''; drawTreatList(); drawCrownSection();
+  };
+
+  function needsCrown(){ return (op.treatmentPlan||[]).some(t=>/crown/i.test(t)) || (op.diagnosis||[]).some(d=>/crown/i.test(d)); }
+  function drawCrownSection(){
+    const el = area.querySelector('#crownSection');
+    if(!needsCrown()){ el.innerHTML=''; return; }
+    el.innerHTML = `<div class="section-title" style="font-size:16px;">Crown Details</div>
+      <div class="grid2">
+        <div class="field"><label>Crown material</label><select id="crownMat"><option value="">—</option>${CROWN_MATERIALS.map(m=>`<option ${op.crownMaterial===m?'selected':''}>${m}</option>`).join('')}</select></div>
+        <div class="field"><label>Status</label><select id="crownStat"><option value="none" ${op.crownStatus==='none'?'selected':''}>Not yet ordered</option><option value="ordered" ${op.crownStatus==='ordered'?'selected':''}>Ordered / awaiting delivery</option><option value="delivered" ${op.crownStatus==='delivered'?'selected':''}>Delivered</option></select></div>
+      </div>`;
+    el.querySelector('#crownMat').onchange = (e)=>{ op.crownMaterial=e.target.value; };
+    el.querySelector('#crownStat').onchange = (e)=>{ op.crownStatus=e.target.value; };
+  }
+
+  drawFindings(); drawDiagSuggest(); drawDiagList(); drawTreatSuggest(); drawTreatList(); drawCrownSection();
+
+  area.querySelector('#toggleOpStatus').onclick = async ()=>{
+    op.status = op.status==='open' ? 'closed' : 'open';
+    await saveOps(); renderOpEditor(area, p, op);
+  };
+  area.querySelector('#saveCaseHeaderBtn').onclick = async ()=>{
+    op.chiefComplaint = cc; op.medicalHistory = mh; op.medicalHistory.other = area.querySelector('#mhOther').value.trim();
+    await saveOps(); toast('Case sheet saved');
+  };
+
+  /* visit log list + add form */
+  function drawVisitLogs(){
+    const el = area.querySelector('#visitLogListEl');
+    const items = DB.visitLogs.filter(v=>v.opId===op.id).sort((a,b)=>b.date.localeCompare(a.date));
+    el.innerHTML = items.length ? items.map(v=>`
+      <div class="visit-card">
+        <div class="row1">
+          <div><strong>${fmtDate(v.date)}</strong> <span style="color:var(--muted);font-size:12.5px;">· Dr. ${esc(v.dentist)}</span> ${v.treatmentDone?'<span class="chip completed">Treatment Done</span>':''}</div>
+          <div class="amt">₹${Number(v.paymentAmount||0).toLocaleString('en-IN')}${v.paymentMode?(' · '+esc(v.paymentMode)):''}</div>
+        </div>
+        ${v.procedureDone?`<div class="lbl">Procedure done</div><p>${esc(v.procedureDone)}</p>`:''}
+        ${v.nextAppointmentDate?`<div class="lbl">Next appointment</div><p>${fmtDate(v.nextAppointmentDate)}${v.nextAppointmentTime?(' at '+fmtTime(v.nextAppointmentTime)):''} ${v.linkedAppointmentId?'<span class="chip scheduled" style="margin-left:4px;">Booked</span>':''}</p>`:''}
+        ${(v.prescription&&v.prescription.length)?`<div class="lbl">Prescription</div><p>${v.prescription.map(m=>esc(m.med+' '+m.dose+' — '+m.freq+' × '+m.days+'d')).join('<br>')}</p>`:''}
+        ${v.notes?`<div class="lbl">Notes</div><p>${esc(v.notes)}</p>`:''}
+        <div class="lbl">Prescribed by ${esc(v.prescribedBy||'—')}${v.performedBy?(' · Treatment by '+esc(v.performedBy)):''}</div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn secondary small" data-sendrx="${v.id}">💬 Send prescription</button>
+          <button class="btn secondary small" data-sendinstr="${v.id}">💬 Send instructions</button>
+          <button class="btn ghost small" data-delv="${v.id}" style="margin-left:auto;">Delete entry</button>
+        </div>
+      </div>`).join('') : `<div class="empty-state"><div class="em-icon">🩺</div>No visits logged in this case yet.</div>`;
+    el.querySelectorAll('[data-delv]').forEach(b=>{ b.onclick=async()=>{
+      if(!(await askConfirm('Delete this visit entry? Its linked appointment (if any) will be removed too.')))return;
+      const v = DB.visitLogs.find(x=>x.id===b.dataset.delv);
+      DB.visitLogs = DB.visitLogs.filter(v=>v.id!==b.dataset.delv);
+      const jobs = [saveVisitLogs()];
+      if(v && v.linkedAppointmentId){ DB.appointments = DB.appointments.filter(a=>a.id!==v.linkedAppointmentId); jobs.push(saveAppointments()); }
+      await Promise.all(jobs);
+      drawVisitLogs();
+    }; });
+    el.querySelectorAll('[data-sendrx]').forEach(b=>{ b.onclick=()=>{ const v=DB.visitLogs.find(x=>x.id===b.dataset.sendrx); sendPrescriptionWA(p, v); }; });
+    el.querySelectorAll('[data-sendinstr]').forEach(b=>{ b.onclick=()=>{ const v=DB.visitLogs.find(x=>x.id===b.dataset.sendinstr); openInstructionsPicker(p, v); }; });
+  }
+  drawVisitLogs();
+
+  area.querySelector('#addVisitLogBtn').onclick = ()=>{ renderVisitLogForm(area, p, op, drawVisitLogs); };
+}
+
+function renderVisitLogForm(area, p, op, onSaved){
+  const formEl = area.querySelector('#visitLogForm');
+  let meds = [];
+  formEl.innerHTML = `
+    <div class="card" style="padding:16px;margin-bottom:14px;">
+      <div class="grid3">
+        <div class="field"><label>Date *</label><input type="date" id="vlDate" value="${todayStr()}"></div>
+        <div class="field"><label>Dentist</label><select id="vlDentist">${DB.dentists.map(d=>`<option ${d.name===me?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Next appointment date</label><input type="date" id="vlNextDate"></div>
+        <div class="field"><label>Next appointment time</label><input type="time" id="vlNextTime" value="10:00"></div>
+      </div>
+      <div class="field"><label>Procedure done today</label><textarea id="vlProcedure"></textarea></div>
+      <div class="grid2">
+        <div class="field"><label>Amount paid (₹)</label><input type="number" id="vlAmount" min="0"></div>
+        <div class="field"><label>Payment mode</label><select id="vlMode"><option value="">—</option><option>Cash</option><option>UPI</option><option>Card</option><option>Insurance</option></select></div>
+      </div>
+      <div class="field"><label><input type="checkbox" id="vlDone" style="width:auto;display:inline-block;margin-right:6px;">Treatment completed today</label></div>
+
+      <div class="section-title" style="font-size:15px;">Prescription</div>
+      <div class="field"><label>Load a saved template</label><select id="vlTemplate"><option value="">— choose —</option>${DB.medTemplates.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
+      <div id="medRows"></div>
+      <button class="btn ghost small" id="addMedRow">+ Add medicine</button>
+      <div class="field" style="margin-top:8px;"><div style="display:flex;gap:6px;"><input type="text" id="tmplName" placeholder="Template name to save this list as"><button class="btn secondary small" id="saveTmplBtn">Save as template</button></div></div>
+
+      <div class="grid2">
+        <div class="field"><label>Prescribed by</label><select id="vlPrescribedBy"><option value="">—</option>${DB.dentists.map(d=>`<option ${d.name===me?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>Treatment performed by</label><select id="vlPerformedBy"><option value="">—</option>${DB.dentists.map(d=>`<option ${d.name===me?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="vlNotes"></textarea></div>
+      <div class="btn-row" style="justify-content:flex-end;">
+        <button class="btn secondary" id="vlCancel">Cancel</button>
+        <button class="btn" id="vlSave">Save Visit Entry</button>
+      </div>
+    </div>`;
+  function drawMedRows(){
+    const el = formEl.querySelector('#medRows');
+    el.innerHTML = meds.map((m,i)=>`
+      <div class="med-row">
+        <input type="text" data-mi="${i}" data-f="med" placeholder="Medicine" value="${esc(m.med)}">
+        <input type="text" data-mi="${i}" data-f="dose" placeholder="Dose" value="${esc(m.dose)}">
+        <input type="text" data-mi="${i}" data-f="freq" placeholder="Frequency" value="${esc(m.freq)}">
+        <input type="text" data-mi="${i}" data-f="days" placeholder="Days" value="${esc(m.days)}">
+        <button class="btn ghost small" data-rmmed="${i}">✕</button>
+      </div>`).join('');
+    el.querySelectorAll('input[data-mi]').forEach(inp=>{ inp.oninput=()=>{ meds[Number(inp.dataset.mi)][inp.dataset.f]=inp.value; }; });
+    el.querySelectorAll('[data-rmmed]').forEach(b=>{ b.onclick=()=>{ meds.splice(Number(b.dataset.rmmed),1); drawMedRows(); }; });
+  }
+  drawMedRows();
+  formEl.querySelector('#addMedRow').onclick = ()=>{ meds.push({med:'',dose:'',freq:'',days:''}); drawMedRows(); };
+  formEl.querySelector('#vlTemplate').onchange = (e)=>{
+    const t = DB.medTemplates.find(x=>x.id===e.target.value);
+    if(t){ meds = t.meds.map(m=>({...m})); drawMedRows(); }
+  };
+  formEl.querySelector('#saveTmplBtn').onclick = async ()=>{
+    const name = formEl.querySelector('#tmplName').value.trim();
+    if(!name || !meds.length){ toast('Add medicines and a template name first'); return; }
+    DB.medTemplates.push({id:genId(), name, meds:meds.map(m=>({...m}))});
+    await saveMedTemplates(); toast('Template saved');
+    formEl.querySelector('#vlTemplate').innerHTML = `<option value="">— choose —</option>${DB.medTemplates.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}`;
+  };
+  formEl.querySelector('#vlCancel').onclick = ()=>{ formEl.innerHTML=''; };
+  formEl.querySelector('#vlSave').onclick = async ()=>{
+    const date = formEl.querySelector('#vlDate').value;
+    if(!date){ toast('Date is required'); return; }
+    const v = {
+      id: genId(), patientId:p.id, opId:op.id, date,
+      dentist: formEl.querySelector('#vlDentist').value,
+      procedureDone: formEl.querySelector('#vlProcedure').value.trim(),
+      treatmentDone: formEl.querySelector('#vlDone').checked,
+      nextAppointmentDate: formEl.querySelector('#vlNextDate').value || '',
+      nextAppointmentTime: formEl.querySelector('#vlNextTime').value || '',
+      linkedAppointmentId: '',
+      paymentAmount: formEl.querySelector('#vlAmount').value || 0,
+      paymentMode: formEl.querySelector('#vlMode').value,
+      prescription: meds.filter(m=>m.med.trim()),
+      prescribedBy: formEl.querySelector('#vlPrescribedBy').value,
+      performedBy: formEl.querySelector('#vlPerformedBy').value,
+      notes: formEl.querySelector('#vlNotes').value.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    DB.visitLogs.push(v);
+    await saveVisitLogs();
+    // If a next appointment date was given, actually book it so it shows on the dashboard/flow board
+    if(v.nextAppointmentDate){
+      const appt = {
+        id: genId(), patientId: p.id, patientName: p.name,
+        date: v.nextAppointmentDate, time: v.nextAppointmentTime || '10:00',
+        dentist: v.dentist, reason: v.procedureDone ? ('Follow-up: '+v.procedureDone) : 'Follow-up visit',
+        status: 'scheduled', opId: op.id, createdAt: new Date().toISOString(),
+      };
+      DB.appointments.push(appt);
+      v.linkedAppointmentId = appt.id;
+      await Promise.all([saveAppointments(), saveVisitLogs()]);
+      toast('Visit entry saved · Next appointment booked');
+    } else {
+      toast('Visit entry saved');
+    }
+    formEl.innerHTML='';
+    if(onSaved) onSaved();
+  };
+}
+
+function sendPrescriptionWA(p, v){
+  if(!v.prescription || !v.prescription.length){ toast('No prescription on this entry'); return; }
+  let lines = [`*Prescription — ${clinicDisplayName()}*`, `Patient: ${p.name}`, `Date: ${fmtDate(v.date)}`, ''];
+  v.prescription.forEach(m=>lines.push(`• ${m.med} ${m.dose} — ${m.freq} for ${m.days} days`));
+  lines.push('', `Prescribed by: ${v.prescribedBy||v.dentist}`);
+  if(DB.clinicInfo && DB.clinicInfo.phone) lines.push(`Clinic contact: ${DB.clinicInfo.phone}`);
+  window.open(waLink(p.phone, lines.join('\n')), '_blank');
+}
+
+function openInstructionsPicker(p, v){
+  const overlay = document.createElement('div');
+  overlay.className='overlay';
+  overlay.innerHTML = `<div class="modal" style="max-width:460px;">
+    <div class="modal-head"><strong>Send post-treatment instructions</strong><button class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <label>Instruction type</label>
+      <select id="instrType">${Object.entries(INSTRUCTIONS).map(([k,o])=>`<option value="${k}">${o.label}</option>`).join('')}</select>
+      <label style="margin-top:10px;">Language</label>
+      <div class="pill-group"><button class="pill-opt sel" data-lang="en">English</button><button class="pill-opt" data-lang="ta">Tamil</button><button class="pill-opt" data-lang="both">Both</button></div>
+      <div class="instr-box" id="instrPreview"></div>
+      <div class="btn-row" style="justify-content:flex-end;margin-top:10px;"><button class="btn" id="instrSendBtn">💬 Send on WhatsApp</button></div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  let lang = 'en';
+  function preview(){
+    const key = overlay.querySelector('#instrType').value;
+    const o = INSTRUCTIONS[key];
+    let txt = '';
+    if(lang==='en'||lang==='both') txt += o.en;
+    if(lang==='both') txt += '\n\n— தமிழில் —\n\n';
+    if(lang==='ta'||lang==='both') txt += o.ta;
+    overlay.querySelector('#instrPreview').textContent = txt;
+  }
+  overlay.querySelector('#instrType').onchange = preview;
+  overlay.querySelectorAll('[data-lang]').forEach(b=>{
+    b.onclick = ()=>{ lang=b.dataset.lang; overlay.querySelectorAll('[data-lang]').forEach(x=>x.classList.toggle('sel', x===b)); preview(); };
+  });
+  preview();
+  overlay.querySelector('.modal-close').onclick = ()=>overlay.remove();
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.querySelector('#instrSendBtn').onclick = ()=>{
+    const key = overlay.querySelector('#instrType').value;
+    const label = INSTRUCTIONS[key].label;
+    let text = `*${label} — ${clinicDisplayName()}*\n\n` + overlay.querySelector('#instrPreview').textContent;
+    if(DB.clinicInfo && DB.clinicInfo.phone) text += `\n\nClinic contact: ${DB.clinicInfo.phone}`;
+    window.open(waLink(p.phone, text), '_blank');
+    overlay.remove();
+  };
+}
+
+/* ---- Appointments tab ---- */
+function renderPtAppointments(body, p){
+  const appts = DB.appointments.filter(a=>a.patientId===p.id).sort((a,b)=>b.date.localeCompare(a.date));
+  body.innerHTML = `
+    <div class="btn-row" style="margin-bottom:10px;"><button class="btn small" id="addApptBtn">+ Book Appointment</button></div>
+    <div id="apptForm"></div>
+    <div id="apptListPt"></div>
+  `;
+  const listEl = body.querySelector('#apptListPt');
+  listEl.innerHTML = appts.length ? appts.map(a=>{
+    const st = STATUSES.find(s=>s.k===a.status) || STATUSES[0];
+    return `<div class="appt-card">
+      <div class="row1" style="display:flex;justify-content:space-between;align-items:center;">
+        <div><strong>${fmtDate(a.date)}</strong> · ${fmtTime(a.time)} <span style="color:var(--muted);font-size:12.5px;">· Dr. ${esc(a.dentist)}</span></div>
+        <span class="chip ${st.cls}">${st.l}</span>
+      </div>
+      ${a.reason?`<p style="margin:6px 0 0;font-size:13px;">${esc(a.reason)}</p>`:''}
+      <div class="btn-row" style="margin-top:8px;">
+        <select data-status="${a.id}" style="width:auto;font-size:12px;padding:5px 8px;">${STATUSES.map(s=>`<option value="${s.k}" ${a.status===s.k?'selected':''}>${s.l}</option>`).join('')}</select>
+        <button class="btn ghost small" data-delappt="${a.id}">Delete</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="empty-state"><div class="em-icon">🗓️</div>No appointments yet.</div>`;
+  listEl.querySelectorAll('[data-status]').forEach(sel=>{
+    sel.onchange = async ()=>{ const a=DB.appointments.find(x=>x.id===sel.dataset.status); a.status=sel.value; await saveAppointments(); toast('Status updated'); };
+  });
+  listEl.querySelectorAll('[data-delappt]').forEach(b=>{
+    b.onclick = async ()=>{ if(!(await askConfirm('Delete this appointment?')))return; DB.appointments=DB.appointments.filter(a=>a.id!==b.dataset.delappt); await saveAppointments(); renderPatientModal(); };
+  });
+  body.querySelector('#addApptBtn').onclick = ()=>{
+    document.getElementById('apptForm').innerHTML = `
+      <div class="card" style="padding:16px;margin-bottom:14px;">
+        <div class="grid3">
+          <div class="field"><label>Date *</label><input type="date" id="apDate" value="${todayStr()}"></div>
+          <div class="field"><label>Time *</label><input type="time" id="apTime" value="10:00"></div>
+          <div class="field"><label>Dentist</label><select id="apDentist">${DB.dentists.map(d=>`<option ${d.name===me?'selected':''}>${esc(d.name)}</option>`).join('')}</select></div>
+        </div>
+        <div class="field"><label>Reason</label><input type="text" id="apReason"></div>
+        <div class="btn-row" style="justify-content:flex-end;"><button class="btn secondary" id="apCancel">Cancel</button><button class="btn" id="apSave">Save</button></div>
+      </div>`;
+    document.getElementById('apCancel').onclick = ()=>{ document.getElementById('apptForm').innerHTML=''; };
+    document.getElementById('apSave').onclick = async ()=>{
+      const date=document.getElementById('apDate').value, time=document.getElementById('apTime').value;
+      if(!date||!time){ toast('Date and time required'); return; }
+      DB.appointments.push({ id:genId(), patientId:p.id, patientName:p.name, date, time, dentist:document.getElementById('apDentist').value, reason:document.getElementById('apReason').value.trim(), status:'scheduled', createdAt:new Date().toISOString() });
+      await saveAppointments(); toast('Appointment booked'); renderPatientModal();
+    };
+  };
+}
+
+/* ---- Images tab ---- */
+function resizeImageFile(file, maxDim, quality){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let {width,height} = img;
+        if(width>height && width>maxDim){ height=Math.round(height*maxDim/width); width=maxDim; }
+        else if(height>maxDim){ width=Math.round(width*maxDim/height); height=maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width=width; canvas.height=height;
+        canvas.getContext('2d').drawImage(img,0,0,width,height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject; img.src = e.target.result;
+    };
+    reader.onerror = reject; reader.readAsDataURL(file);
+  });
+}
+function renderPtImages(body, p){
+  body.innerHTML = `
+    <div class="field"><label>Upload image</label>
+      <div class="grid2"><select id="imgCat">${IMG_CATS.map(c=>`<option value="${c.k}">${c.l}</option>`).join('')}</select><input type="file" id="imgFile" accept="image/*" capture="environment"></div>
+      <p style="font-size:11.5px;color:var(--muted);margin-top:4px;" id="imgStatus"></p>
+    </div>
+    <div id="imgSections"></div>
+  `;
+  const secEl = body.querySelector('#imgSections');
+  function draw(){
+    const list = DB.imagesMeta.filter(im=>im.patientId===p.id);
+    secEl.innerHTML = IMG_CATS.map(c=>{
+      const items = list.filter(im=>im.type===c.k);
+      if(!items.length) return '';
+      return `<div class="img-cat-title">${c.l} (${items.length})</div><div class="img-grid">${items.map(im=>`<div class="img-thumb" data-view="${im.id}"><img data-src="${im.id}" alt="${c.l}"><button class="del" data-del="${im.id}">✕</button></div>`).join('')}</div>`;
+    }).join('') || `<div class="empty-state"><div class="em-icon">🩻</div>No images uploaded yet.</div>`;
+    secEl.querySelectorAll('img[data-src]').forEach(async (imgEl)=>{ const rec = await sGet('image:'+imgEl.dataset.src); if(rec && rec.dataUrl) imgEl.src = rec.dataUrl; });
+    secEl.querySelectorAll('[data-del]').forEach(b=>{ b.onclick=async(e)=>{ e.stopPropagation(); if(!(await askConfirm('Delete this image?')))return; DB.imagesMeta=DB.imagesMeta.filter(im=>im.id!==b.dataset.del); await saveImagesMeta(); await sDel('image:'+b.dataset.del); draw(); }; });
+    secEl.querySelectorAll('.img-thumb').forEach(el=>{ el.onclick = async ()=>{ const rec=await sGet('image:'+el.dataset.view); if(rec&&rec.dataUrl){ const w=window.open(''); if(w) w.document.write(`<img src="${rec.dataUrl}" style="max-width:100%;">`); } }; });
+  }
+  draw();
+  body.querySelector('#imgFile').onchange = async (e)=>{
+    const file = e.target.files[0]; if(!file) return;
+    const statusEl = document.getElementById('imgStatus'); statusEl.textContent='Processing image…';
+    try{
+      const dataUrl = await resizeImageFile(file, 1280, 0.72);
+      const id = genId();
+      const ok = await sSet('image:'+id, {dataUrl});
+      if(!ok){ statusEl.textContent='Upload failed — try a smaller image.'; return; }
+      DB.imagesMeta.push({ id, patientId:p.id, type:document.getElementById('imgCat').value, date:todayStr(), dentist:me, createdAt:new Date().toISOString() });
+      await saveImagesMeta(); statusEl.textContent='Uploaded.'; e.target.value=''; draw();
+    }catch(err){ statusEl.textContent='Could not process this image.'; }
+  };
+}
+
+/* ============ PRINT CASE SHEET ============ */
+function printCaseSheet(p){
+  const ops = DB.ops.filter(o=>o.patientId===p.id).sort((a,b)=>a.createdAt.localeCompare(b.createdAt));
+  const visits = DB.visitLogs.filter(v=>v.patientId===p.id);
+  const appts = DB.appointments.filter(a=>a.patientId===p.id && a.status==='scheduled').sort((a,b)=>a.date.localeCompare(b.date));
+  const totalPaid = visits.reduce((s,v)=>s+(Number(v.paymentAmount)||0),0);
+  const area = document.getElementById('print-area');
+  area.innerHTML = `
+    <div style="font-family:'DM Sans',sans-serif;color:#16302B;">
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #16302B;padding-bottom:10px;margin-bottom:16px;">
+        <div>
+          <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:600;">${esc(clinicDisplayName())} — Case Sheet</div>
+          ${(DB.clinicInfo && (DB.clinicInfo.phone||DB.clinicInfo.address)) ? `<div style="font-size:11.5px;color:#6B7A75;margin-top:2px;">${esc(DB.clinicInfo.address||'')}${(DB.clinicInfo.address&&DB.clinicInfo.phone)?' · ':''}${DB.clinicInfo.phone?('Ph: '+esc(DB.clinicInfo.phone)):''}</div>` : ''}
+        </div>
+        <div style="font-size:12px;">Printed ${fmtDate(todayStr())}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px;">
+        <tr><td style="padding:3px 0;width:120px;color:#6B7A75;">Patient Name</td><td style="font-weight:600;">${esc(p.name)}</td><td style="padding:3px 0;width:100px;color:#6B7A75;">Age / Gender</td><td>${esc(p.age||'—')} / ${esc(p.gender||'—')}</td></tr>
+        <tr><td style="padding:3px 0;color:#6B7A75;">Phone</td><td>${esc(p.phone||'—')}</td><td style="padding:3px 0;color:#6B7A75;">Patient ID</td><td class="mono">${esc(p.id)}</td></tr>
+        <tr><td style="padding:3px 0;color:#6B7A75;">Address</td><td colspan="3">${esc(p.address||'—')}</td></tr>
+      </table>
+      ${ops.map(op=>{
+        const vlogs = visits.filter(v=>v.opId===op.id).sort((a,b)=>a.date.localeCompare(b.date));
+        return `<div style="margin-bottom:18px;border:1px solid #E1DED2;border-radius:8px;padding:12px;">
+          <div style="font-weight:700;font-size:14px;">${esc((op.chiefComplaint&&op.chiefComplaint.text)||'Case sheet')} <span style="font-weight:400;color:#6B7A75;font-size:11.5px;">(${op.status})</span></div>
+          <div style="font-size:11.5px;color:#6B7A75;margin-bottom:6px;">Opened ${fmtDate(op.createdAt.slice(0,10))}</div>
+          ${op.medicalHistory && Object.values(op.medicalHistory).some(v=>v)?`<div style="font-size:12px;"><strong>Medical history:</strong> ${MED_HISTORY_ITEMS.filter(m=>op.medicalHistory[m.k]).map(m=>m.l).join(', ')}${op.medicalHistory.other?('; '+esc(op.medicalHistory.other)):''}</div>`:''}
+          ${(op.findings&&op.findings.length)?`<div style="font-size:12px;margin-top:4px;"><strong>Findings:</strong> ${op.findings.map(f=>{const ft=FINDING_TYPES.find(x=>x.k===f.type);return esc((ft?ft.l:f.type)+' ('+(f.tooth||'—')+')');}).join(', ')}</div>`:''}
+          ${(op.diagnosis&&op.diagnosis.length)?`<div style="font-size:12px;margin-top:4px;"><strong>Diagnosis:</strong> ${op.diagnosis.map(esc).join('; ')}</div>`:''}
+          ${(op.treatmentPlan&&op.treatmentPlan.length)?`<div style="font-size:12px;margin-top:4px;"><strong>Treatment plan:</strong> ${op.treatmentPlan.map(esc).join('; ')}</div>`:''}
+          ${op.crownMaterial?`<div style="font-size:12px;margin-top:4px;"><strong>Crown material:</strong> ${esc(op.crownMaterial)} (${esc(op.crownStatus)})</div>`:''}
+          ${vlogs.length?`<div style="margin-top:8px;font-size:12px;"><strong>Visit log:</strong>${vlogs.map(v=>`<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #E1DED2;">${fmtDate(v.date)} — Dr. ${esc(v.dentist)} — ₹${Number(v.paymentAmount||0).toLocaleString('en-IN')}${v.treatmentDone?' — Treatment done':''}${v.procedureDone?('<br>Procedure: '+esc(v.procedureDone)):''}${v.nextAppointmentDate?('<br>Next appointment: '+fmtDate(v.nextAppointmentDate)+(v.nextAppointmentTime?(' at '+fmtTime(v.nextAppointmentTime)):'')):''}</div>`).join('')}</div>`:''}
+        </div>`;
+      }).join('')}
+      <div style="text-align:right;font-weight:700;font-size:13px;margin:10px 0;">Total collected: ₹${totalPaid.toLocaleString('en-IN')}</div>
+      ${appts.length ? `<div style="font-weight:700;font-size:14px;margin:14px 0 6px;border-bottom:1px solid #E1DED2;padding-bottom:4px;">Upcoming Appointments</div>${appts.map(a=>`<div style="font-size:12.5px;margin-bottom:4px;">${fmtDate(a.date)} at ${fmtTime(a.time)} — Dr. ${esc(a.dentist)}${a.reason?(' — '+esc(a.reason)):''}</div>`).join('')}` : ''}
+      <div style="margin-top:30px;font-size:11px;color:#6B7A75;">Signature: _______________________</div>
+    </div>`;
+  window.print();
+}
+
+/* ============ WHATSAPP SUMMARY SHARE ============ */
+function shareWhatsAppSummary(p){
+  const visits = DB.visitLogs.filter(v=>v.patientId===p.id).sort((a,b)=>b.date.localeCompare(a.date));
+  const latest = visits[0];
+  const op = latest ? DB.ops.find(o=>o.id===latest.opId) : null;
+  const nextAppt = DB.appointments.filter(a=>a.patientId===p.id && a.status==='scheduled').sort((a,b)=>a.date.localeCompare(b.date))[0];
+  let lines = [`*${clinicDisplayName()} — Case Summary*`, `Patient: ${p.name}`];
+  if(p.age) lines.push(`Age: ${p.age}`);
+  if(op && op.diagnosis && op.diagnosis.length) lines.push('', `Diagnosis: ${op.diagnosis.join('; ')}`);
+  if(op && op.treatmentPlan && op.treatmentPlan.length) lines.push(`Treatment plan: ${op.treatmentPlan.join('; ')}`);
+  if(latest){ lines.push('', `Last visit: ${fmtDate(latest.date)}`); if(latest.procedureDone) lines.push(`Procedure: ${latest.procedureDone}`); lines.push(`Amount paid: ₹${Number(latest.paymentAmount||0).toLocaleString('en-IN')}`); }
+  if(nextAppt) lines.push('', `Next appointment: ${fmtDate(nextAppt.date)} at ${fmtTime(nextAppt.time)} with Dr. ${nextAppt.dentist}`);
+  if(DB.clinicInfo && DB.clinicInfo.phone) lines.push('', `Clinic contact: ${DB.clinicInfo.phone}`);
+  window.open(waLink(p.phone, lines.join('\n')), '_blank');
+}
+
+/* ============ MANAGE / BUSINESS PANEL ============ */
+function renderManageOverlay(){
+  const overlay = document.createElement('div');
+  overlay.className='overlay'; overlay.id='manageOverlay';
+  overlay.innerHTML = `<div class="modal" style="max-width:820px;">
+    <div class="modal-head"><strong>📊 Business Manager</strong><button class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <div class="manage-tabs">
+        <button data-mt="earnings" class="${manageTab==='earnings'?'active':''}">Earnings</button>
+        <button data-mt="crowns" class="${manageTab==='crowns'?'active':''}">Crown Tracker</button>
+        <button data-mt="missed" class="${manageTab==='missed'?'active':''}">Missed Follow-ups</button>
+        <button data-mt="materials" class="${manageTab==='materials'?'active':''}">Materials</button>
+        <button data-mt="doctors" class="${manageTab==='doctors'?'active':''}">Doctors</button>
+        <button data-mt="clinic" class="${manageTab==='clinic'?'active':''}">Clinic Profile</button>
+        <button data-mt="theme" class="${manageTab==='theme'?'active':''}">Theme</button>
+      </div>
+      <div id="manageBody"></div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.querySelector('.modal-close').onclick = ()=>overlay.remove();
+  overlay.onclick = (e)=>{ if(e.target===overlay) overlay.remove(); };
+  overlay.querySelectorAll('[data-mt]').forEach(b=>{ b.onclick=()=>{ manageTab=b.dataset.mt; renderManageOverlay(); overlay.remove(); }; });
+  const body = overlay.querySelector('#manageBody');
+  if(manageTab==='earnings') renderEarnings(body);
+  else if(manageTab==='crowns') renderCrownTracker(body);
+  else if(manageTab==='missed') renderMissedFollowups(body);
+  else if(manageTab==='materials') renderMaterials(body);
+  else if(manageTab==='doctors') renderDoctors(body);
+  else if(manageTab==='clinic') renderClinicProfile(body);
+  else if(manageTab==='theme') renderThemePicker(body);
+}
+
+function renderEarnings(body){
+  const today = todayStr();
+  const now = new Date();
+  const weekAgo = new Date(now.getTime()-6*86400000).toISOString().slice(0,10);
+  const monthStart = today.slice(0,7)+'-01';
+  const sum = (from)=>DB.visitLogs.filter(v=>v.date>=from).reduce((s,v)=>s+(Number(v.paymentAmount)||0),0);
+  const todayTotal = DB.visitLogs.filter(v=>v.date===today).reduce((s,v)=>s+(Number(v.paymentAmount)||0),0);
+  const weekTotal = sum(weekAgo);
+  const monthTotal = sum(monthStart);
+  const recent = DB.visitLogs.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12);
+  body.innerHTML = `
+    <div class="stats-row">
+      <div class="stat"><div class="v">₹${todayTotal.toLocaleString('en-IN')}</div><div class="l">Today</div></div>
+      <div class="stat"><div class="v">₹${weekTotal.toLocaleString('en-IN')}</div><div class="l">Last 7 days</div></div>
+      <div class="stat"><div class="v">₹${monthTotal.toLocaleString('en-IN')}</div><div class="l">This month</div></div>
+    </div>
+    <div class="section-title" style="font-size:15px;">Recent transactions</div>
+    ${recent.length ? recent.map(v=>{
+      const p = DB.patients.find(pp=>pp.id===v.patientId);
+      return `<div class="mat-row"><span style="flex:1;">${fmtDate(v.date)} · ${esc(p?p.name:'—')}</span><span class="amt mono" style="color:var(--gold);font-weight:600;">₹${Number(v.paymentAmount||0).toLocaleString('en-IN')}</span></div>`;
+    }).join('') : `<div class="empty-state">No transactions recorded yet.</div>`}
+  `;
+}
+
+function renderCrownTracker(body){
+  const waiting = DB.ops.filter(o=>o.crownStatus==='ordered');
+  body.innerHTML = `
+    <div class="section-title" style="font-size:15px;margin-top:0;">Crowns awaiting delivery <span class="eyebrow">${waiting.length}</span></div>
+    <div id="crownListEl"></div>`;
+  function draw(){
+    const el = body.querySelector('#crownListEl');
+    const list = DB.ops.filter(o=>o.crownStatus==='ordered');
+    el.innerHTML = list.length ? list.map(op=>{
+      const p = DB.patients.find(pp=>pp.id===op.patientId);
+      return `<div class="mat-row"><div style="flex:1;"><strong>${esc(p?p.name:'—')}</strong> · ${esc(p?p.phone:'')}<div style="font-size:11.5px;color:var(--muted);">${esc(op.crownMaterial||'')}</div></div><button class="btn small gold" data-deliver="${op.id}">Mark Delivered</button></div>`;
+    }).join('') : `<div class="empty-state">No patients waiting on a crown right now.</div>`;
+    el.querySelectorAll('[data-deliver]').forEach(b=>{
+      b.onclick = async ()=>{
+        const op = DB.ops.find(o=>o.id===b.dataset.deliver);
+        op.crownStatus = 'delivered'; await saveOps(); draw(); toast('Marked delivered');
+      };
+    });
+  }
+  draw();
+}
+
+function renderMissedFollowups(body){
+  const today = todayStr();
+  const missed = [];
+  DB.visitLogs.forEach(v=>{
+    if(!v.nextAppointmentDate || v.nextAppointmentDate>=today) return;
+    const hasFollowup = DB.appointments.some(a=>a.patientId===v.patientId && a.date>=v.nextAppointmentDate);
+    if(!hasFollowup) missed.push(v);
+  });
+  body.innerHTML = `<div class="section-title" style="font-size:15px;margin-top:0;">Patients overdue for follow-up <span class="eyebrow">${missed.length}</span></div><div id="missedListEl"></div>`;
+  const el = body.querySelector('#missedListEl');
+  el.innerHTML = missed.length ? missed.map(v=>{
+    const p = DB.patients.find(pp=>pp.id===v.patientId);
+    return `<div class="mat-row"><div style="flex:1;"><strong>${esc(p?p.name:'—')}</strong> · ${esc(p?p.phone:'')}<div style="font-size:11.5px;color:var(--muted);">Expected back ${fmtDate(v.nextAppointmentDate)}</div></div><button class="btn small secondary" data-open="${p?p.id:''}">Open</button></div>`;
+  }).join('') : `<div class="empty-state">No overdue patients — everyone's on track.</div>`;
+  el.querySelectorAll('[data-open]').forEach(b=>{
+    b.onclick = ()=>{ document.getElementById('manageOverlay').remove(); openPatientId=b.dataset.open; patientTab='appointments'; activeOpId=null; render(); };
+  });
+}
+
+function renderMaterials(body){
+  body.innerHTML = `
+    <div class="section-title" style="font-size:15px;margin-top:0;">Materials &amp; Inventory</div>
+    <div class="card" style="padding:14px;margin-bottom:14px;">
+      <div class="grid4">
+        <input type="text" id="matName" placeholder="Item name">
+        <input type="number" id="matQty" placeholder="Quantity" min="0">
+        <input type="date" id="matExpiry" placeholder="Expiry date">
+        <button class="btn small" id="matAdd">+ Add</button>
+      </div>
+    </div>
+    <div id="matListEl"></div>`;
+  const today = todayStr();
+  const in30 = new Date(Date.now()+30*86400000).toISOString().slice(0,10);
+  function draw(){
+    const el = body.querySelector('#matListEl');
+    const list = DB.materials.slice().sort((a,b)=>(a.expiry||'').localeCompare(b.expiry||''));
+    el.innerHTML = list.length ? list.map(m=>{
+      let cls = '';
+      if(m.expiry && m.expiry<today) cls='expired';
+      else if(m.expiry && m.expiry<=in30) cls='expiring';
+      return `<div class="mat-row ${cls}"><div style="flex:1;"><strong>${esc(m.name)}</strong> · Qty ${esc(m.qty)}${m.expiry?(' · Exp '+fmtDate(m.expiry)):''}</div><button class="btn ghost small" data-rmmat="${m.id}">Remove</button></div>`;
+    }).join('') : `<div class="empty-state">No materials logged yet.</div>`;
+    el.querySelectorAll('[data-rmmat]').forEach(b=>{ b.onclick=async()=>{ DB.materials=DB.materials.filter(m=>m.id!==b.dataset.rmmat); await saveMaterials(); draw(); }; });
+  }
+  draw();
+  body.querySelector('#matAdd').onclick = async ()=>{
+    const name = body.querySelector('#matName').value.trim();
+    if(!name){ toast('Item name required'); return; }
+    DB.materials.push({ id:genId(), name, qty:body.querySelector('#matQty').value||0, expiry:body.querySelector('#matExpiry').value||'' });
+    await saveMaterials();
+    body.querySelector('#matName').value=''; body.querySelector('#matQty').value=''; body.querySelector('#matExpiry').value='';
+    draw();
+  };
+}
+
+function renderDoctors(body){
+  body.innerHTML = `<div class="section-title" style="font-size:15px;margin-top:0;">Doctors In-charge</div><div id="docListEl"></div>`;
+  function draw(){
+    const el = body.querySelector('#docListEl');
+    el.innerHTML = DB.dentists.map(d=>`
+      <div class="doc-card">
+        <div class="dphoto" id="dphoto-${d.id}">${esc(initials(d.name))}</div>
+        <div style="flex:1;">
+          <input type="text" data-dname="${d.id}" value="${esc(d.name)}" style="font-weight:600;margin-bottom:6px;">
+          <textarea data-dbio="${d.id}" placeholder="Short description / specialization" style="min-height:40px;">${esc(d.bio||'')}</textarea>
+          <div class="btn-row" style="margin-top:6px;"><label class="btn secondary small" style="cursor:pointer;">Upload photo<input type="file" accept="image/*" data-dphotoinput="${d.id}" style="display:none;"></label><button class="btn small" data-dsave="${d.id}">Save</button><button class="btn danger small" data-dremove="${d.id}" style="margin-left:auto;">Remove</button></div>
+        </div>
+      </div>`).join('');
+    DB.dentists.forEach(d=>{ if(d.photoId) loadDocPhotoInto(el.querySelector(`#dphoto-${d.id}`), d.photoId); });
+    el.querySelectorAll('[data-dremove]').forEach(b=>{
+      b.onclick = async ()=>{
+        const d = DB.dentists.find(x=>x.id===b.dataset.dremove);
+        if(!d) return;
+        if(!(await askConfirm(`Remove ${d.name} from the doctors list? This won't delete their past records, just removes them from the picker.`))) return;
+        DB.dentists = DB.dentists.filter(x=>x.id!==d.id);
+        await saveDentists();
+        toast('Doctor removed');
+        draw();
+      };
+    });
+    el.querySelectorAll('[data-dphotoinput]').forEach(inp=>{
+      inp.onchange = async (e)=>{
+        const file = e.target.files[0]; if(!file) return;
+        const dataUrl = await resizeImageFile(file, 400, 0.8);
+        const id = genId(); await sSet('docimg:'+id, {dataUrl});
+        const d = DB.dentists.find(x=>x.id===inp.dataset.dphotoinput);
+        d.photoId = id; await saveDentists(); draw(); toast('Photo updated');
+      };
+    });
+    el.querySelectorAll('[data-dsave]').forEach(b=>{
+      b.onclick = async ()=>{
+        const d = DB.dentists.find(x=>x.id===b.dataset.dsave);
+        d.name = el.querySelector(`[data-dname="${d.id}"]`).value.trim() || d.name;
+        d.bio = el.querySelector(`[data-dbio="${d.id}"]`).value.trim();
+        await saveDentists(); toast('Saved'); draw();
+      };
+    });
+  }
+  draw();
+}
+
+function renderClinicProfile(body){
+  const ci = DB.clinicInfo || {name:'', phone:'', address:''};
+  body.innerHTML = `
+    <div class="section-title" style="font-size:15px;margin-top:0;">Clinic Profile</div>
+    <p style="font-size:12.5px;color:var(--muted);margin-top:-8px;">This name and number appear on printed case sheets and on every WhatsApp message sent to patients — instead of the app name.</p>
+    <div class="field"><label>Clinic name</label><input type="text" id="ciName" placeholder="e.g. Shanmugapriyan Dental Care" value="${esc(ci.name)}"></div>
+    <div class="field"><label>Clinic phone number</label><input type="tel" id="ciPhone" placeholder="10-digit clinic contact number" value="${esc(ci.phone)}"></div>
+    <div class="field"><label>Clinic address (optional, shown on print)</label><textarea id="ciAddress" style="min-height:44px;">${esc(ci.address||'')}</textarea></div>
+    <div class="btn-row"><button class="btn" id="ciSave">Save Clinic Profile</button></div>
+  `;
+  body.querySelector('#ciSave').onclick = async ()=>{
+    DB.clinicInfo = {
+      name: body.querySelector('#ciName').value.trim(),
+      phone: body.querySelector('#ciPhone').value.trim(),
+      address: body.querySelector('#ciAddress').value.trim(),
+    };
+    await saveClinicInfo();
+    toast('Clinic profile saved');
+  };
+}
+
+function renderThemePicker(body){
+  const current = localStorage.getItem('dw1708_theme') || 'clinic';
+  body.innerHTML = `<div class="section-title" style="font-size:15px;margin-top:0;">App Theme</div>
+    <div class="btn-row">${Object.keys(THEMES).map(k=>`<div style="text-align:center;"><div class="theme-swatch ${k===current?'sel':''}" data-theme="${k}" style="background:${THEMES[k]['--teal']};"></div><div style="font-size:11px;margin-top:4px;text-transform:capitalize;">${k}</div></div>`).join('')}</div>
+    <p style="font-size:12px;color:var(--muted);margin-top:14px;">Theme is saved on this device only — each dentist can pick their own.</p>
+    <p style="font-size:11px;color:var(--muted);opacity:0.7;margin-top:28px;text-align:center;">Created by Dr. Shanmugapriyan</p>`;
+  body.querySelectorAll('[data-theme]').forEach(el=>{
+    el.onclick = ()=>{ localStorage.setItem('dw1708_theme', el.dataset.theme); applyTheme(); renderThemePicker(body); toast('Theme applied'); };
+  });
+}
+
+/* ============ INIT ============ */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
